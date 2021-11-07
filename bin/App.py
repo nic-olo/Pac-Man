@@ -11,7 +11,7 @@ from MazeRender import *
 class App:
     def __init__(self):
         self.window = makeWindow()
-        self.canvas, self.scoreText = makeCanvas(self.window)
+        self.canvas = makeCanvas(self.window)
         self.image = setImage(MAZE_PATH)
         self.direction = None
         self.state = 'start'
@@ -24,18 +24,15 @@ class App:
         self.makeRectangle()
         self.walls = wallsCoordinates(MAZE_COORDINATES_PATH)
         self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas)
+        self.scoreText = display_scores(self.canvas)
         self.makePlayer()
-        # self.canMove()
+        self.configure_buttons()
 
     def run(self):
-        self.startUp()
-        self.movePlayer()
-        self.canvas.bind("<Left>", self.leftKey)
-        self.canvas.bind("<Right>", self.rightKey)
-        self.canvas.bind("<Up>", self.upKey)
-        self.canvas.bind("<Down>", self.downKey)
-        self.canvas.focus_set()
-        # self.canvas.coords(self.player, 300, positions, 400, positions)
+        self.canvas.pack()
+        # self.startUp()
+        # self.movePlayer()
+        display_menu(self.window)
         self.window.mainloop()
 
     def makePlayer(self):
@@ -56,6 +53,13 @@ class App:
 
     def downKey(self, event):
         self.direction = "down"
+
+    def configure_buttons(self):
+        self.canvas.bind("<Left>", self.leftKey)
+        self.canvas.bind("<Right>", self.rightKey)
+        self.canvas.bind("<Up>", self.upKey)
+        self.canvas.bind("<Down>", self.downKey)
+        self.canvas.focus_set()
 
     def inGrid(self):
         if not (((self.positions[0] + self.positions[2]) // 2 - GRID_START_X) % CELL_WIDTH < 10):

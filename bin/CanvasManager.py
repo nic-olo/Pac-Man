@@ -1,4 +1,4 @@
-from tkinter import Canvas
+from tkinter import *
 
 from PIL import Image, ImageTk
 
@@ -7,8 +7,7 @@ from settings import *
 
 def makeCanvas(window):
     canvas = Canvas(window, bg="black", width=WIDTH, height=HEIGHT)
-    scoreText = display_scores(canvas)
-    return canvas, scoreText
+    return canvas
 
 
 def setImage(path):
@@ -16,7 +15,6 @@ def setImage(path):
     image = image.resize((IMG_WIDTH, IMG_HEIGHT), Image.ANTIALIAS)
     image = ImageTk.PhotoImage(image)
     return image
-
 
 def makeLines(canvas):
     for i in range(0, GRID_COLUMNS+1):
