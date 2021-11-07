@@ -10,11 +10,12 @@ from MazeRender import *
 
 class App:
     def __init__(self):
+        self.buttons = []
         self.window = makeWindow()
         self.canvas = makeCanvas(self.window)
         self.image = setImage(MAZE_PATH)
         self.direction = None
-        self.state = 'start'
+        self.state = "menu"
         self.score = 0
         self.prev_direction = None
 
@@ -30,10 +31,14 @@ class App:
 
     def run(self):
         self.canvas.pack()
-        # self.startUp()
-        # self.movePlayer()
-        display_menu(self.window)
+        self.display_menu()
         self.window.mainloop()
+
+    def play_game(self):
+        for button in self.buttons:
+            button.destroy()
+        self.startUp()
+        self.movePlayer()
 
     def makePlayer(self):
         self.player = [self.canvas.create_oval(PLAYER_X1, PLAYER_Y1, PLAYER_X2, PLAYER_Y2, fill=PLAYER_COLOR)]
@@ -54,11 +59,15 @@ class App:
     def downKey(self, event):
         self.direction = "down"
 
+    # def escKey(self):
+    #    self.state = "pause"
+
     def configure_buttons(self):
         self.canvas.bind("<Left>", self.leftKey)
         self.canvas.bind("<Right>", self.rightKey)
         self.canvas.bind("<Up>", self.upKey)
         self.canvas.bind("<Down>", self.downKey)
+        # self.canvas.bind("<Esc>", self.escKey)
         self.canvas.focus_set()
 
     def inGrid(self):
@@ -99,15 +108,18 @@ class App:
                 if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
                     t = True
 
-            elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 2:
+            elif self.direction == 'right' and abs(
+                    player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 2:
                 if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
                     t = True
 
-            elif self.direction == 'up' and abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 20:
+            elif self.direction == 'up' and abs(
+                    player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 20:
                 if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
                     t = True
 
-            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 2:
+            elif self.direction == 'down' and abs(
+                    player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 2:
                 if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
                     t = True
 
@@ -150,3 +162,33 @@ class App:
                            ((self.positions[3] + CELL_HEIGHT // 2 + 1) // CELL_HEIGHT) * CELL_HEIGHT + 6)
 
         self.window.after(DELAY, self.movePlayer)
+
+    def display_menu(self):
+        self.display_buttons()
+
+    def display_buttons(self):
+        self.buttons.append(Button(self.window,
+                                   text="New Game",
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: self.play_game())
+                            )
+        self.buttons[-1].place(x=BUTTON_1_X, y=BUTTON_1_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text="CONTINUE",
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT))
+        self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text="LEADERBOARD",
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT))
+        self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text="CONTROLS",
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT))
+        self.buttons[-1].place(x=BUTTON_4_X, y=BUTTON_4_Y)
