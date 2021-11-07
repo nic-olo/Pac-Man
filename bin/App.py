@@ -1,0 +1,148 @@
+from tkinter import CENTER
+
+from CanvasManager import *
+from WindowManager import *
+from MazeRender import *
+
+
+# from Player import Player
+
+
+class App:
+    def __init__(self):
+        self.window = makeWindow()
+        self.canvas, self.scoreText = makeCanvas(self.window)
+        self.image = setImage(MAZE_PATH)
+        self.direction = None
+        self.state = 'start'
+        self.score = 0
+        self.prev_direction = None
+
+    def startUp(self):
+        self.canvas.create_image(640, 320, anchor=CENTER, image=self.image)
+        makeLines(self.canvas)
+        self.makeRectangle()
+        self.walls = wallsCoordinates(MAZE_COORDINATES_PATH)
+        self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas)
+        self.makePlayer()
+        # self.canMove()
+
+    def run(self):
+        self.startUp()
+        self.movePlayer()
+        self.canvas.bind("<Left>", self.leftKey)
+        self.canvas.bind("<Right>", self.rightKey)
+        self.canvas.bind("<Up>", self.upKey)
+        self.canvas.bind("<Down>", self.downKey)
+        self.canvas.focus_set()
+        # self.canvas.coords(self.player, 300, positions, 400, positions)
+        self.window.mainloop()
+
+    def makePlayer(self):
+        self.player = [self.canvas.create_oval(PLAYER_X1, PLAYER_Y1, PLAYER_X2, PLAYER_Y2, fill=PLAYER_COLOR)]
+
+    def makeRectangle(self):
+        self.grid = [self.canvas.create_rectangle(RECTANGLE_X1, RECTANGLE_Y1,
+                                                  RECTANGLE_X2, RECTANGLE_Y2, outline="orange")]
+
+    def leftKey(self, event):
+        self.direction = "left"
+
+    def rightKey(self, event):
+        self.direction = "right"
+
+    def upKey(self, event):
+        self.direction = "up"
+
+    def downKey(self, event):
+        self.direction = "down"
+
+    def inGrid(self):
+        if not (((self.positions[0] + self.positions[2]) // 2 - GRID_START_X) % CELL_WIDTH < 10):
+            if self.direction == 'up' or self.direction == 'down':
+                self.direction = self.prev_direction
+
+        elif not (((self.positions[1] + self.positions[3]) // 2 - GRID_START_Y) % CELL_HEIGHT < 10):
+            if self.direction == 'left' or self.direction == 'right':
+                self.direction = self.prev_direction
+
+    def canMove(self):
+        player_coords = self.canvas.coords(self.player[0])
+        for wall in self.walls:
+            if self.direction == 'left' and \
+                    abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 2:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 10:
+                    self.direction = None
+
+            elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * wall[0])) < 2:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 10:
+                    self.direction = None
+
+            elif self.direction == 'up' and abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 2:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 10:
+                    self.direction = None
+
+            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 2:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 10:
+                    self.direction = None
+
+    def coinCollision(self):
+        for coin in self.coins:
+            player_coords = self.canvas.coords(self.player[0])
+            t = False
+            if self.direction == 'left' and \
+                    abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0] - COIN_SIZE_X)) < 20:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
+                    t = True
+
+            elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 2:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
+                    t = True
+
+            elif self.direction == 'up' and abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 20:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
+                    t = True
+
+            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 2:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
+                    t = True
+
+            if t:
+                self.canvas.delete(coin[2])
+                self.coins.remove(coin)
+                self.score += 1
+                update_score(self.canvas, self.scoreText, self.score)
+
+    #    (GRID_START_X + CELL_WIDTH * wall[0],
+    #     GRID_START_Y + CELL_HEIGHT * wall[1],
+    #     GRID_START_X + CELL_WIDTH * wall[0] + CELL_WIDTH,
+    #     GRID_START_Y + CELL_HEIGHT * wall[1] + CELL_HEIGHT)
+
+    def movePlayer(self):
+        self.canvas.pack()
+        self.positions = self.canvas.coords(self.player[0])
+        self.inGrid()
+        self.coinCollision()
+        self.canMove()
+        if self.direction == 'left':
+            self.canvas.move(self.player[0], -PLAYER_SPEED, 0)
+
+        elif self.direction == 'right':
+            self.canvas.move(self.player[0], PLAYER_SPEED, 0)
+
+        elif self.direction == 'up':
+            self.canvas.move(self.player[0], 0, -PLAYER_SPEED)
+
+        elif self.direction == 'down':
+            self.canvas.move(self.player[0], 0, PLAYER_SPEED)
+
+        self.prev_direction = self.direction
+
+        """moving the rectangle"""
+        self.canvas.coords(self.grid[0],
+                           ((self.positions[0] + CELL_WIDTH // 2 - 1) // CELL_WIDTH) * CELL_WIDTH - 2,
+                           ((self.positions[1] + CELL_HEIGHT // 2 - 1) // CELL_HEIGHT) * CELL_HEIGHT + 6,
+                           ((self.positions[2] + CELL_WIDTH // 2 + 1) // CELL_WIDTH) * CELL_WIDTH - 2,
+                           ((self.positions[3] + CELL_HEIGHT // 2 + 1) // CELL_HEIGHT) * CELL_HEIGHT + 6)
+
+        self.window.after(DELAY, self.movePlayer)
