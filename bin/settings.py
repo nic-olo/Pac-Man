@@ -4,19 +4,8 @@ while developing this project."""
 WIDTH = 1280
 HEIGHT = 720
 
-BUTTON_WIDTH = int(11*WIDTH/HEIGHT)
-BUTTON_HEIGHT = int(6*HEIGHT/WIDTH)
-
-BUTTONS_OFFSET = 80
-BUTTON_1_X = 550
-BUTTON_1_Y = 200
-BUTTON_2_X = BUTTON_1_X
-BUTTON_2_Y = BUTTON_1_Y + BUTTONS_OFFSET
-BUTTON_3_X = BUTTON_1_X
-BUTTON_3_Y = BUTTON_2_Y + BUTTONS_OFFSET
-BUTTON_4_X = BUTTON_1_X
-BUTTON_4_Y = BUTTON_3_Y + BUTTONS_OFFSET
-
+X_WIN_POS = 0  # (ws/2) - (w/2) # calculate center
+Y_WIN_POS = 0  # (hs/2) - (h/2) # TO FIX
 
 IMG_WIDTH = 560
 IMG_HEIGHT = 620
@@ -35,8 +24,28 @@ CELL_HEIGHT = (GRID_STOP_Y - GRID_START_Y) / GRID_ROWS
 MAZE_PATH = "../GameBoard/GameBoard.png"
 MAZE_COORDINATES_PATH = "../GameBoard/GameBoardWalls.txt"
 
-X_WIN_POS = 0  # (ws/2) - (w/2) # calculate center
-Y_WIN_POS = 0  # (hs/2) - (h/2) # TO FIX
+DEFAULT_KEY_SETTINGS = {
+        'left': '<Left>',
+        'right': '<Right>',
+        'up': '<Up>',
+        'down': '<Down>',
+        'pause': '<Escape>',
+        'cheat': '<c>',
+        'boss': '<b>'
+}
+
+BUTTON_WIDTH = int(11*WIDTH/HEIGHT)
+BUTTON_HEIGHT = int(6*HEIGHT/WIDTH)
+
+BUTTONS_OFFSET = 90
+BUTTON_1_X = 550
+BUTTON_1_Y = 200
+BUTTON_2_X = BUTTON_1_X
+BUTTON_2_Y = BUTTON_1_Y + BUTTONS_OFFSET
+BUTTON_3_X = BUTTON_1_X
+BUTTON_3_Y = BUTTON_2_Y + BUTTONS_OFFSET
+BUTTON_4_X = BUTTON_1_X
+BUTTON_4_Y = BUTTON_3_Y + BUTTONS_OFFSET
 
 PLAYER_DIMENSIONS = 25
 PLAYER_X1 = 632
@@ -56,7 +65,7 @@ COIN_SIZE_Y = CELL_HEIGHT / CELL_HEIGHT * COINS_RATIO
 PLAYER_COLOR = '#FFFF00'
 COINS_COLOR = '#FFD700'
 
-PLAYER_SPEED = 2
+PLAYER_SPEED = 1.6
 # TODO bind PLAYER_SPEED and FPS
 FPS = 60
 DELAY = int(1000 / FPS)  # round the number to avoid errors

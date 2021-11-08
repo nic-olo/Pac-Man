@@ -17,12 +17,14 @@ class App:
         self.direction = None
         self.prev_direction = None
         self.state = "menu"
+        self.keySettings = DEFAULT_KEY_SETTINGS
         self.score = 0
 
     def startUp(self):
         self.gameBoard = self.canvas.create_image(640, 320, anchor=CENTER, image=self.image)
         self.lines = makeLines(self.canvas)
         self.makeRectangle()
+        self.playerSpeed = PLAYER_SPEED
         self.walls = wallsCoordinates(MAZE_COORDINATES_PATH)
         self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas)
         self.scoreText, self.highScoreText = display_scores(self.canvas)
@@ -36,20 +38,22 @@ class App:
 
     def states_manager(self, state):
         self.state = state
+        for button in self.buttons:
+            button.destroy()
         if self.state == 'start' or self.state == 'resume':
             self.play_game()
 
         elif self.state == 'menu':
             self.reset()
-
             self.display_menu()
 
-        if self.state == 'pause':
+        elif self.state == 'pause':
             self.display_pause_menu()
 
+        elif self.state == 'controls':
+            self.display_controls_menu()
+
     def play_game(self):
-        for button in self.buttons:
-            button.destroy()
         if self.state == 'start':
             self.startUp()
         elif self.state == 'resume':
@@ -61,30 +65,39 @@ class App:
 
     def makeRectangle(self):
         self.grid = self.canvas.create_rectangle(RECTANGLE_X1, RECTANGLE_Y1,
-                                                  RECTANGLE_X2, RECTANGLE_Y2, outline="orange")
+                                                 RECTANGLE_X2, RECTANGLE_Y2, outline="orange")
 
-    def leftKey(self, event):
+    def moveLeft(self, event):
         self.direction = "left"
 
-    def rightKey(self, event):
+    def moveRight(self, event):
         self.direction = "right"
 
-    def upKey(self, event):
+    def moveUp(self, event):
         self.direction = "up"
 
-    def downKey(self, event):
+    def moveDown(self, event):
         self.direction = "down"
 
     def escKey(self, event):
         if self.state == 'start' or self.state == 'resume':
             self.states_manager('pause')
 
+    def cheatKey(self, event):
+        if self.playerSpeed < 4:
+            self.playerSpeed += 0.2
+
+    def bossKey(self, event):
+        pass
+
     def configure_buttons(self):
-        self.canvas.bind("<Left>", self.leftKey)
-        self.canvas.bind("<Right>", self.rightKey)
-        self.canvas.bind("<Up>", self.upKey)
-        self.canvas.bind("<Down>", self.downKey)
+        self.canvas.bind(self.keySettings['left'], self.moveLeft)
+        self.canvas.bind("<Right>", self.moveRight)
+        self.canvas.bind("<Up>", self.moveUp)
+        self.canvas.bind("<Down>", self.moveDown)
         self.canvas.bind("<Escape>", self.escKey)
+        self.canvas.bind("<c>", self.cheatKey)
+        self.canvas.bind("<b>", self.bossKey)
         self.canvas.focus_set()
 
     def inGrid(self):
@@ -159,23 +172,24 @@ class App:
         self.coinCollision()
         self.canMove()
         if self.direction == 'left':
-            self.canvas.move(self.player, -PLAYER_SPEED, 0)
+            self.canvas.move(self.player, -self.playerSpeed, 0)
 
         elif self.direction == 'right':
-            self.canvas.move(self.player, PLAYER_SPEED, 0)
+            self.canvas.move(self.player, self.playerSpeed, 0)
 
         elif self.direction == 'up':
-            self.canvas.move(self.player, 0, -PLAYER_SPEED)
+            self.canvas.move(self.player, 0, -self.playerSpeed)
 
         elif self.direction == 'down':
-            self.canvas.move(self.player, 0, PLAYER_SPEED)
+            self.canvas.move(self.player, 0, self.playerSpeed)
 
         self.prev_direction = self.direction
 
         """moving the rectangle"""
         self.move_grid()
-
-        self.window.after(DELAY, self.movePlayer)
+        
+        if self.state == 'start' or self.state == 'resume':
+            self.window.after(DELAY, self.movePlayer)
 
     def move_grid(self):
         if self.state == 'start' or self.state == 'resume':
@@ -198,21 +212,22 @@ class App:
         self.buttons[-1].place(x=BUTTON_1_X, y=BUTTON_1_Y)
 
         self.buttons.append(Button(self.window,
-                                   text="CONTINUE",
+                                   text="Continue",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT))
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
 
         self.buttons.append(Button(self.window,
-                                   text="LEADERBOARD",
+                                   text="Leaderboard",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT))
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
 
         self.buttons.append(Button(self.window,
-                                   text="CONTROLS",
+                                   text="Controls",
                                    width=BUTTON_WIDTH,
-                                   height=BUTTON_HEIGHT))
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: self.states_manager('controls')))
         self.buttons[-1].place(x=BUTTON_4_X, y=BUTTON_4_Y)
 
     def reset(self):
@@ -267,6 +282,31 @@ class App:
         self.buttons.append(Button(self.window,
                                    text="Menu",
                                    width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: self.states_manager('menu'))
+                            )
+        self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
+
+    def display_controls_menu(self):
+        self.buttons.append(Button(self.window,
+                                   text="Continue",
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: self.states_manager('resume'))
+                            )
+        self.buttons[-1].place(x=BUTTON_1_X, y=BUTTON_1_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text="Save",
+                                   width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT)
+                            )
+        self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text="Menu",
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: self.states_manager('menu'))
                             )
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
