@@ -92,12 +92,12 @@ class App:
 
     def configure_buttons(self):
         self.canvas.bind(self.keySettings['left'], self.moveLeft)
-        self.canvas.bind("<Right>", self.moveRight)
-        self.canvas.bind("<Up>", self.moveUp)
-        self.canvas.bind("<Down>", self.moveDown)
-        self.canvas.bind("<Escape>", self.escKey)
-        self.canvas.bind("<c>", self.cheatKey)
-        self.canvas.bind("<b>", self.bossKey)
+        self.canvas.bind(self.keySettings['right'], self.moveRight)
+        self.canvas.bind(self.keySettings['up'], self.moveUp)
+        self.canvas.bind(self.keySettings['down'], self.moveDown)
+        self.canvas.bind(self.keySettings['escape'], self.escKey)
+        self.canvas.bind(self.keySettings['cheat'], self.cheatKey)
+        self.canvas.bind(self.keySettings['boss'], self.bossKey)
         self.canvas.focus_set()
 
     def inGrid(self):
@@ -187,7 +187,7 @@ class App:
 
         """moving the rectangle"""
         self.move_grid()
-        
+
         if self.state == 'start' or self.state == 'resume':
             self.window.after(DELAY, self.movePlayer)
 
@@ -289,19 +289,60 @@ class App:
 
     def display_controls_menu(self):
         self.buttons.append(Button(self.window,
-                                   text="Continue",
+                                   text=self.keySettings['left'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: self.states_manager('resume'))
+                                   command=lambda: None)
                             )
         self.buttons[-1].place(x=BUTTON_1_X, y=BUTTON_1_Y)
 
         self.buttons.append(Button(self.window,
-                                   text="Save",
+                                   text=self.keySettings['right'],
                                    width=BUTTON_WIDTH,
-                                   height=BUTTON_HEIGHT)
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: None)
                             )
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text=self.keySettings['up'],
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: None)
+                            )
+        self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text=self.keySettings['down'],
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: None)
+                            )
+        self.buttons[-1].place(x=BUTTON_4_X, y=BUTTON_4_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text=self.keySettings['escape'],
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: None)
+                            )
+        self.buttons[-1].place(x=BUTTON_5_X, y=BUTTON_5_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text=self.keySettings['cheat'],
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: None)
+                            )
+        self.buttons[-1].place(x=BUTTON_6_X, y=BUTTON_6_Y)
+
+        self.buttons.append(Button(self.window,
+                                   text=self.keySettings['boss'],
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: None)
+                            )
+        self.buttons[-1].place(x=BUTTON_7_X, y=BUTTON_7_Y)
 
         self.buttons.append(Button(self.window,
                                    text="Menu",
@@ -309,4 +350,5 @@ class App:
                                    height=BUTTON_HEIGHT,
                                    command=lambda: self.states_manager('menu'))
                             )
-        self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
+        self.buttons[-1].place(x=100, y=100)
+
