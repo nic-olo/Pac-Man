@@ -16,13 +16,17 @@ def setImage(path):
     image = ImageTk.PhotoImage(image)
     return image
 
+
 def makeLines(canvas):
+    lines = []
     for i in range(0, GRID_COLUMNS+1):
-        canvas.create_line(GRID_START_X + CELL_WIDTH * i, GRID_START_Y,
-                           GRID_START_X + CELL_WIDTH * i, GRID_STOP_Y, fill="white")
+        lines.append(canvas.create_line(GRID_START_X + CELL_WIDTH * i, GRID_START_Y,
+                           GRID_START_X + CELL_WIDTH * i, GRID_STOP_Y, fill="white"))
+
     for i in range(0, GRID_ROWS+1):
-        canvas.create_line(GRID_START_X, GRID_START_Y + CELL_HEIGHT * i, GRID_STOP_X,
-                           GRID_START_Y + CELL_HEIGHT * i,  fill="white")
+        lines.append(canvas.create_line(GRID_START_X, GRID_START_Y + CELL_HEIGHT * i, GRID_STOP_X,
+                           GRID_START_Y + CELL_HEIGHT * i,  fill="white"))
+    return lines
 
 
 def display_scores(canvas):
@@ -32,12 +36,12 @@ def display_scores(canvas):
         font="Algerian",
         text='SCORE: 0'
     )
-    canvas.create_text(
+    highScoreText = canvas.create_text(
         HIGH_SCORE_POS_X, HIGH_SCORE_POS_Y, fill="white",
         font="Algerian",
         text='HIGH SCORE: 0'
     )
-    return scoreText
+    return scoreText, highScoreText
 
 
 def update_score(canvas, scoreText, score):
