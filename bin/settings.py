@@ -1,8 +1,8 @@
 """Declaring all the constants that I will need
 while developing this project."""
 
-WIDTH = 1280
-HEIGHT = 720
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
 
 X_WIN_POS = 0  # (ws/2) - (w/2) # calculate center
 Y_WIN_POS = 0  # (hs/2) - (h/2) # TO FIX
@@ -34,8 +34,8 @@ DEFAULT_KEY_SETTINGS = {
         'boss': '<b>'
 }
 
-BUTTON_WIDTH = int(11*WIDTH/HEIGHT)
-BUTTON_HEIGHT = int(5*HEIGHT/WIDTH)
+BUTTON_WIDTH = int(11 * WINDOW_WIDTH / WINDOW_HEIGHT)
+BUTTON_HEIGHT = int(5 * WINDOW_HEIGHT / WINDOW_WIDTH)
 
 BUTTONS_OFFSET = 60
 BUTTON_1_X = 550

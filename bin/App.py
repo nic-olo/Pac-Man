@@ -1,4 +1,4 @@
-from tkinter import CENTER
+from tkinter import Button
 
 from CanvasManager import *
 from WindowManager import *
@@ -14,10 +14,12 @@ class App:
         self.window = makeWindow()
         self.canvas = makeCanvas(self.window)
         self.image = setImage(MAZE_PATH)
+        self.keySettings = DEFAULT_KEY_SETTINGS
+        self.configure_controls()
         self.direction = None
         self.prev_direction = None
+        self.isPause = True
         self.state = "menu"
-        self.keySettings = DEFAULT_KEY_SETTINGS
         self.score = 0
 
     def startUp(self):
@@ -29,7 +31,6 @@ class App:
         self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas)
         self.scoreText, self.highScoreText = display_scores(self.canvas)
         self.makePlayer()
-        self.configure_buttons()
 
     def run(self):
         self.canvas.pack()
@@ -40,14 +41,21 @@ class App:
         self.state = state
         for button in self.buttons:
             button.destroy()
+
+        self.buttons =[]
+
         if self.state == 'start' or self.state == 'resume':
+            self.isPause = False
             self.play_game()
 
         elif self.state == 'menu':
-            self.reset()
+            self.isPause = True
+            if 'var' in locals():
+                self.reset()
             self.display_menu()
 
         elif self.state == 'pause':
+            self.isPause = True
             self.display_pause_menu()
 
         elif self.state == 'controls':
@@ -88,9 +96,11 @@ class App:
             self.playerSpeed += 0.2
 
     def bossKey(self, event):
-        pass
+        if not self.isPause:
+            self.states_manager('pause')
+        hide_window(self.window)
 
-    def configure_buttons(self):
+    def configure_controls(self):
         self.canvas.bind(self.keySettings['left'], self.moveLeft)
         self.canvas.bind(self.keySettings['right'], self.moveRight)
         self.canvas.bind(self.keySettings['up'], self.moveUp)
@@ -292,7 +302,7 @@ class App:
                                    text=self.keySettings['left'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('left'))
                             )
         self.buttons[-1].place(x=BUTTON_1_X, y=BUTTON_1_Y)
 
@@ -300,7 +310,7 @@ class App:
                                    text=self.keySettings['right'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('right'))
                             )
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
 
@@ -308,7 +318,7 @@ class App:
                                    text=self.keySettings['up'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('up'))
                             )
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
 
@@ -316,7 +326,7 @@ class App:
                                    text=self.keySettings['down'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('down'))
                             )
         self.buttons[-1].place(x=BUTTON_4_X, y=BUTTON_4_Y)
 
@@ -324,7 +334,7 @@ class App:
                                    text=self.keySettings['escape'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('escape'))
                             )
         self.buttons[-1].place(x=BUTTON_5_X, y=BUTTON_5_Y)
 
@@ -332,7 +342,7 @@ class App:
                                    text=self.keySettings['cheat'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('cheat'))
                             )
         self.buttons[-1].place(x=BUTTON_6_X, y=BUTTON_6_Y)
 
@@ -340,7 +350,7 @@ class App:
                                    text=self.keySettings['boss'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: None)
+                                   command=lambda: self.onButtonPress('boss'))
                             )
         self.buttons[-1].place(x=BUTTON_7_X, y=BUTTON_7_Y)
 
@@ -351,4 +361,22 @@ class App:
                                    command=lambda: self.states_manager('menu'))
                             )
         self.buttons[-1].place(x=100, y=100)
+
+    def onButtonPress(self, key):
+        x = enumerate(self.keySettings)
+        if key == 'left':
+            self.buttons[0].configure(text='Press a Key')
+        if key == 'right':
+            self.buttons[1].configure(text='Press a Key')
+        if key == 'up':
+            self.buttons[2].configure(text='Press a Key')
+        if key == 'down':
+            self.buttons[3].configure(text='Press a Key')
+        if key == 'escape':
+            self.buttons[4].configure(text='Press a Key')
+        if key == 'cheat':
+            self.buttons[5].configure(text='Press a Key')
+        if key == 'boss':
+            self.buttons[6].configure(text='Press a Key')
+
 

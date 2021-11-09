@@ -6,7 +6,7 @@ from settings import *
 
 
 def makeCanvas(window):
-    canvas = Canvas(window, bg="black", width=WIDTH, height=HEIGHT)
+    canvas = Canvas(window, bg="black", width=WINDOW_WIDTH, height=WINDOW_HEIGHT)
     return canvas
 
 
