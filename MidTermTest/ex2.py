@@ -1,4 +1,4 @@
-with open('test_file2.txt', 'r') as file:
+with open('test_file1.txt', 'r') as file:
     line = file.read()
 
 line = list(line)
@@ -11,18 +11,30 @@ for i in range(20):
         break
 
 if c == 'x':
-    print('hexadecimal')
+    letters = []
+    line.append(' ')
+    for i in range(len(line)):
+        if line[i] == ' ':
+            letter = ''.join(line[i-2:i])
+            letter = bytes.fromhex(letter)
+            letter = letter.decode("ASCII")
+            letters.append(letter)
+
+    print(''.join(letters))
+
+
 
 elif c == ')':
     alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
                 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
-
     decoder = ['x', 'y', 'z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o',
                'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+
     message = []
     words = ''.join(line)
     words = words.split(' ')
     words[-1] += ' '
+
     for word in words:
         startIndex = 0
         letters = []
@@ -44,10 +56,12 @@ elif c == 'e':
                '.-.': 'r', '...': 's', '-': 't', '..-': 'u', '...-': 'v',
                '.--': 'w', '-..-': 'x', '-.--': 'y', '--..': 'z'
                }
+
     message = []
     words = ''.join(line)
     words = words.split('/ ')
     words[-1] += ' '
+
     for word in words:
         startIndex = 0
         letters = []
