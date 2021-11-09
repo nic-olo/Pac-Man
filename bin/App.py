@@ -125,19 +125,19 @@ class App:
         for wall in self.walls:
             if self.direction == 'left' and \
                     abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 2:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 10:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 4:
                     self.direction = None
 
-            elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * wall[0])) < 2:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 10:
+            elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * wall[0])) < 3:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 7:
                     self.direction = None
 
             elif self.direction == 'up' and abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 2:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 10:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 6:
                     self.direction = None
 
-            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 2:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 10:
+            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) <5:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 8:
                     self.direction = None
 
     def coinCollision(self):
@@ -363,20 +363,25 @@ class App:
         self.buttons[-1].place(x=100, y=100)
 
     def onButtonPress(self, key):
-        x = enumerate(self.keySettings)
-        if key == 'left':
-            self.buttons[0].configure(text='Press a Key')
-        if key == 'right':
-            self.buttons[1].configure(text='Press a Key')
-        if key == 'up':
-            self.buttons[2].configure(text='Press a Key')
-        if key == 'down':
-            self.buttons[3].configure(text='Press a Key')
-        if key == 'escape':
-            self.buttons[4].configure(text='Press a Key')
-        if key == 'cheat':
-            self.buttons[5].configure(text='Press a Key')
-        if key == 'boss':
-            self.buttons[6].configure(text='Press a Key')
+        for i, (_, control_name) in enumerate(self.keySettings.items()):
+            self.buttons[i].configure(text=control_name)
 
+        button_index = list(self.keySettings).index(key)
+        self.buttons[button_index].configure(text='Press a Key')
+
+        self.new_key = self.window.bind('<Key>', lambda event: change_key(event))
+
+        def change_key(event):
+            key_name = '<' + event.keysym + '>'
+            if key_name == '<??>':
+                self.buttons[button_index].configure(text='Failed!')
+
+            elif key_name in self.keySettings.values():
+                self.buttons[button_index].configure(background='red', text='Conflict!')
+            else:
+                self.window.unbind('<Key>', self.new_key)
+                if key == 'jump1':
+                    self.new_key.configure(text=key_name)
+                self.keySettings[key] = key_name
+            self.configure_controls()
 
