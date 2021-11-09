@@ -8,7 +8,8 @@ with open('EnglishWords.txt', 'r') as file:
         words.append(word)
 
 
-punctuation = [',', '.', ';', ':', '?', '!', '[', ']', '{', '}', '/', '\\', '@', '#', '&', '(', ')']
+punctuation = [',', '.', ';', ':', '?', '!', '[', ']', '{', '}', '/', '\\', '@', '#', '&', '(', ')',
+               '\'', '\"', '~', '+', '=', '-', '_', '>', '<', '`', '|']
 
 n_up = 0
 n_punctuation = 0
@@ -50,4 +51,3 @@ out.append(f"Number of correct words in file: {n_correct_words}\n")
 out.append(f"Number of incorrect words in file: {n_wrong_words}")
 
 print(''.join(out))
-
