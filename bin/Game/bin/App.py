@@ -1,12 +1,8 @@
-import pickle
 from tkinter import Button
 
-import os
-
-from CanvasManager import * # specify the modules!!!!
+from CanvasManager import *
 from WindowManager import *
 from MazeRender import *
-from SavingMananger import *
 
 
 # from Player import Player
@@ -18,21 +14,13 @@ class App:
         self.window = makeWindow()
         self.canvas = makeCanvas(self.window)
         self.image = setImage(MAZE_PATH)
-        self.load_default_key_settings()
+        self.keySettings = DEFAULT_KEY_SETTINGS
         self.configure_controls()
-        self.player_coords, self.coins_removed = play_game()
         self.direction = None
         self.prev_direction = None
         self.isPause = True
         self.state = "menu"
         self.score = 0
-
-    def load_default_key_settings(self):
-        if os.path.exists("../save/settings.pickle"):
-            with open("../save/settings.pickle", 'rb') as key_settings:
-                self.keySettings = pickle.load(key_settings)
-        else:
-            self.keySettings = DEFAULT_KEY_SETTINGS
 
     def startUp(self):
         self.gameBoard = self.canvas.create_image(640, 320, anchor=CENTER, image=self.image)
@@ -62,6 +50,8 @@ class App:
 
         elif self.state == 'menu':
             self.isPause = True
+            if 'var' in locals():
+                self.reset()
             self.display_menu()
 
         elif self.state == 'pause':
@@ -153,30 +143,30 @@ class App:
     def coinCollision(self):
         for coin in self.coins:
             player_coords = self.canvas.coords(self.player)
-            temp = False
+            t = False
             if self.direction == 'left' and \
                     abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0] - COIN_SIZE_X)) < 20:
                 if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
-                    temp = True
+                    t = True
 
             elif self.direction == 'right' and abs(
                     player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 2:
                 if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
-                    temp = True
+                    t = True
 
             elif self.direction == 'up' and abs(
                     player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 20:
                 if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
-                    temp = True
+                    t = True
 
             elif self.direction == 'down' and abs(
                     player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 2:
                 if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
-                    temp = True
+                    t = True
 
-            if temp:
+            if t:
                 self.canvas.delete(coin[2])
-                self.coins_removed.append(self.coins.pop(coin.index()))
+                self.coins.remove(coin)
                 self.score += 1
                 update_score(self.canvas, self.scoreText, self.score)
 
@@ -295,8 +285,7 @@ class App:
         self.buttons.append(Button(self.window,
                                    text="Save",
                                    width=BUTTON_WIDTH,
-                                   height=BUTTON_HEIGHT,
-                                   command=lambda: save_game(self.canvas.coords(self.player), self.coins, self.buttons[1]))
+                                   height=BUTTON_HEIGHT)
                             )
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
 
@@ -375,7 +364,7 @@ class App:
 
     def onButtonPress(self, key):
         for i, (_, control_name) in enumerate(self.keySettings.items()):
-            self.buttons[i].configure(background='white', text=control_name)
+            self.buttons[i].configure(text=control_name)
 
         button_index = list(self.keySettings).index(key)
         self.buttons[button_index].configure(text='Press a Key')
@@ -385,26 +374,14 @@ class App:
         def change_key(event):
             key_name = '<' + event.keysym + '>'
             if key_name == '<??>':
-                self.buttons[button_index].configure(background='red', text='Error!')
+                self.buttons[button_index].configure(text='Failed!')
 
             elif key_name in self.keySettings.values():
                 self.buttons[button_index].configure(background='red', text='Conflict!')
-
             else:
                 self.window.unbind('<Key>', self.new_key)
-                self.buttons[button_index].configure(text=key_name)
+                if key == 'jump1':
+                    self.new_key.configure(text=key_name)
                 self.keySettings[key] = key_name
-
             self.configure_controls()
-            update_default_key_settings()
-
-        def update_default_key_settings():
-            if not os.path.exists('../save/'):
-                os.mkdir('../save')
-            with open("../save/settings.pickle", "wb") as key_settings:
-                pickle.dump(self.keySettings, key_settings)
-
-
-
-
 
