@@ -11,19 +11,28 @@ def wallsCoordinates(path):
     for i in range(GRID_ROWS):
         line = file.readline()
         for j in range(GRID_COLUMNS):
-            if line[j] == '1':
+            if line[j] == 'W':
                 walls.append([j, i])
     return walls
 
 
-def coinsRender(path, canvas):
+def coinsRender(path, canvas, coins_removed, state):
     file = open(path, 'r')
     coins = []
+
     for i in range(GRID_ROWS):
         line = file.readline()
         for j in range(GRID_COLUMNS):
-            if line[j] == 'C':
+            temp = True
+            if state == 'continue':
+                for c in coins_removed:
+                    if j == c[0] and i == c[1]:
+                        temp = False
+                        break
+            if line[j] == 'C' and temp:
                 coins.append([j, i])
+
+    file.close()
 
     for i in range(len(coins)):
         coin_id = canvas.create_oval(GRID_START_X + CELL_WIDTH * coins[i][0] + COIN_SIZE_X,
@@ -34,3 +43,6 @@ def coinsRender(path, canvas):
         coins[i].append(coin_id)
 
     return coins
+
+
+

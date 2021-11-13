@@ -3,10 +3,11 @@ from tkinter import Button
 
 import os
 
-from CanvasManager import * # specify the modules!!!!
+from CanvasManager import *  # specify the modules!!!!
 from WindowManager import *
 from MazeRender import *
 from SavingMananger import *
+from Enemy import Enemy
 
 
 # from Player import Player
@@ -26,6 +27,7 @@ class App:
         self.isPause = True
         self.state = "menu"
         self.score = 0
+        self.enemies = []
 
     def load_default_key_settings(self):
         if os.path.exists("../save/settings.pickle"):
@@ -40,8 +42,9 @@ class App:
         self.makeRectangle()
         self.playerSpeed = PLAYER_SPEED
         self.walls = wallsCoordinates(MAZE_COORDINATES_PATH)
-        self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas)
+        self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas, self.coins_removed, self.state)
         self.scoreText, self.highScoreText = display_scores(self.canvas)
+        self.make_enemies()
         self.makePlayer()
 
     def run(self):
@@ -54,9 +57,9 @@ class App:
         for button in self.buttons:
             button.destroy()
 
-        self.buttons =[]
+        self.buttons = []
 
-        if self.state == 'start' or self.state == 'resume':
+        if self.state == 'start' or self.state == 'continue' or self.state == 'resume':
             self.isPause = False
             self.play_game()
 
@@ -72,82 +75,84 @@ class App:
             self.display_controls_menu()
 
     def play_game(self):
-        if self.state == 'start':
+        if self.state == 'start' or self.state == 'continue':
+            if self.state == 'start':
+                self.coins_removed = []
             self.startUp()
         elif self.state == 'resume':
             self.change_objects_state('normal')
-        self.movePlayer()
+        self.enemies[1].move_enemy()
+        self.move_player()
+
+    def make_enemies(self):
+        for i in range(4):
+            self.enemies.append(Enemy(self, i + 1))
+            self.enemies[i].make_enemy()
 
     def makePlayer(self):
-        self.player = self.canvas.create_oval(PLAYER_X1, PLAYER_Y1, PLAYER_X2, PLAYER_Y2, fill=PLAYER_COLOR)
+        if self.state == 'start' or self.state == 'resume':
+            self.player = self.canvas.create_oval(PLAYER_COORDINATES, fill=PLAYER_COLOR)
+        else:
+            self.player = self.canvas.create_oval(self.player_coords, fill=PLAYER_COLOR)
+            self.state = 'start'
 
     def makeRectangle(self):
         self.grid = self.canvas.create_rectangle(RECTANGLE_X1, RECTANGLE_Y1,
                                                  RECTANGLE_X2, RECTANGLE_Y2, outline="orange")
 
-    def moveLeft(self, event):
-        self.direction = "left"
-
-    def moveRight(self, event):
-        self.direction = "right"
-
-    def moveUp(self, event):
-        self.direction = "up"
-
-    def moveDown(self, event):
-        self.direction = "down"
-
-    def escKey(self, event):
-        if self.state == 'start' or self.state == 'resume':
-            self.states_manager('pause')
-
-    def cheatKey(self, event):
-        if self.playerSpeed < 4:
-            self.playerSpeed += 0.2
-
-    def bossKey(self, event):
-        if not self.isPause:
-            self.states_manager('pause')
-        hide_window(self.window)
-
     def configure_controls(self):
-        self.canvas.bind(self.keySettings['left'], self.moveLeft)
-        self.canvas.bind(self.keySettings['right'], self.moveRight)
-        self.canvas.bind(self.keySettings['up'], self.moveUp)
-        self.canvas.bind(self.keySettings['down'], self.moveDown)
-        self.canvas.bind(self.keySettings['escape'], self.escKey)
-        self.canvas.bind(self.keySettings['cheat'], self.cheatKey)
-        self.canvas.bind(self.keySettings['boss'], self.bossKey)
+        def moveLeft(event):
+            self.direction = "left"
+
+        def moveRight(event):
+            self.direction = "right"
+
+        def moveUp(event):
+            self.direction = "up"
+
+        def moveDown(event):
+            self.direction = "down"
+
+        def escKey(event):
+            if self.state == 'start' or self.state == 'resume':
+                self.states_manager('pause')
+
+        def cheatKey(event):
+            if self.playerSpeed < 4:
+                self.playerSpeed += 0.2
+
+        def bossKey(event):
+            if not self.isPause:
+                self.states_manager('pause')
+            hide_window(self.window)
+
+        self.canvas.bind(self.keySettings['left'], moveLeft)
+        self.canvas.bind(self.keySettings['right'], moveRight)
+        self.canvas.bind(self.keySettings['up'], moveUp)
+        self.canvas.bind(self.keySettings['down'], moveDown)
+        self.canvas.bind(self.keySettings['escape'], escKey)
+        self.canvas.bind(self.keySettings['cheat'], cheatKey)
+        self.canvas.bind(self.keySettings['boss'], bossKey)
         self.canvas.focus_set()
 
-    def inGrid(self):
-        if self.state == 'start' or self.state == 'resume':
-            if not (((self.positions[0] + self.positions[2]) // 2 - GRID_START_X) % CELL_WIDTH < 10):
-                if self.direction == 'up' or self.direction == 'down':
-                    self.direction = self.prev_direction
-
-            elif not (((self.positions[1] + self.positions[3]) // 2 - GRID_START_Y) % CELL_HEIGHT < 10):
-                if self.direction == 'left' or self.direction == 'right':
-                    self.direction = self.prev_direction
-
-    def canMove(self):
+    def can_move(self):
         player_coords = self.canvas.coords(self.player)
         for wall in self.walls:
             if self.direction == 'left' and \
                     abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 2:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 4:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 8:
                     self.direction = None
 
             elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * wall[0])) < 3:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 7:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 10:
                     self.direction = None
 
             elif self.direction == 'up' and abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 2:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 6:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 4:
                     self.direction = None
 
-            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) <5:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 8:
+            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 2:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 4:
                     self.direction = None
 
     def coinCollision(self):
@@ -155,42 +160,61 @@ class App:
             player_coords = self.canvas.coords(self.player)
             temp = False
             if self.direction == 'left' and \
-                    abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0] - COIN_SIZE_X)) < 20:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
+                    abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0] - COIN_SIZE_X)) < 9:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 13:
                     temp = True
 
             elif self.direction == 'right' and abs(
-                    player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 2:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 10:
+                    player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 3:
+                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 13:
                     temp = True
 
             elif self.direction == 'up' and abs(
-                    player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 20:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
+                    player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 18:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 13:
                     temp = True
 
             elif self.direction == 'down' and abs(
-                    player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 2:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 10:
+                    player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 3:
+                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 13:
                     temp = True
 
             if temp:
                 self.canvas.delete(coin[2])
-                self.coins_removed.append(self.coins.pop(coin.index()))
+                self.coins_removed.append(coin)
+                self.coins.remove(coin)
                 self.score += 1
                 update_score(self.canvas, self.scoreText, self.score)
 
-    #    (GRID_START_X + CELL_WIDTH * wall[0],
-    #     GRID_START_Y + CELL_HEIGHT * wall[1],
-    #     GRID_START_X + CELL_WIDTH * wall[0] + CELL_WIDTH,
-    #     GRID_START_Y + CELL_HEIGHT * wall[1] + CELL_HEIGHT)
+    def move_player(self):
+        def move_grid():
+            """moving the rectangle"""
+            if self.state == 'start' or self.state == 'resume':
+                self.canvas.coords(self.grid,
+                                   ((positions[0] + CELL_WIDTH // 2 - 1) // CELL_WIDTH) * CELL_WIDTH - 2,
+                                   ((positions[1] + CELL_HEIGHT // 2 - 1) // CELL_HEIGHT) * CELL_HEIGHT + 6,
+                                   ((positions[2] + CELL_WIDTH // 2 + 1) // CELL_WIDTH) * CELL_WIDTH - 2,
+                                   ((positions[3] + CELL_HEIGHT // 2 + 1) // CELL_HEIGHT) * CELL_HEIGHT + 6)
 
-    def movePlayer(self):
+        def inGrid():
+            if self.state == 'start' or self.state == 'resume':
+
+                if self.direction == 'up' or self.direction == 'down':
+                    offset = abs(((positions[0] - GRID_START_X) % CELL_WIDTH) - CELL_WIDTH)
+                    if 3 < offset < 15:
+                        self.direction = self.prev_direction
+
+                if self.direction == 'left' or self.direction == 'right':
+                    offset = abs(((positions[1] - GRID_START_Y) % CELL_HEIGHT) - CELL_HEIGHT)
+                    if 3 < offset < 15:
+                        self.direction = self.prev_direction
+
         self.canvas.pack()
-        self.positions = self.canvas.coords(self.player)
-        self.inGrid()
+        positions = self.canvas.coords(self.player)
+        inGrid()
         self.coinCollision()
-        self.canMove()
+        self.can_move()
+
         if self.direction == 'left':
             self.canvas.move(self.player, -self.playerSpeed, 0)
 
@@ -204,20 +228,10 @@ class App:
             self.canvas.move(self.player, 0, self.playerSpeed)
 
         self.prev_direction = self.direction
-
-        """moving the rectangle"""
-        self.move_grid()
+        move_grid()
 
         if self.state == 'start' or self.state == 'resume':
-            self.window.after(DELAY, self.movePlayer)
-
-    def move_grid(self):
-        if self.state == 'start' or self.state == 'resume':
-            self.canvas.coords(self.grid,
-                               ((self.positions[0] + CELL_WIDTH // 2 - 1) // CELL_WIDTH) * CELL_WIDTH - 2,
-                               ((self.positions[1] + CELL_HEIGHT // 2 - 1) // CELL_HEIGHT) * CELL_HEIGHT + 6,
-                               ((self.positions[2] + CELL_WIDTH // 2 + 1) // CELL_WIDTH) * CELL_WIDTH - 2,
-                               ((self.positions[3] + CELL_HEIGHT // 2 + 1) // CELL_HEIGHT) * CELL_HEIGHT + 6)
+            self.window.after(DELAY, self.move_player)
 
     def display_menu(self):
         self.display_menu_buttons()
@@ -234,7 +248,8 @@ class App:
         self.buttons.append(Button(self.window,
                                    text="Continue",
                                    width=BUTTON_WIDTH,
-                                   height=BUTTON_HEIGHT))
+                                   height=BUTTON_HEIGHT,
+                                   command=lambda: self.states_manager('continue')))
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
 
         self.buttons.append(Button(self.window,
@@ -285,7 +300,7 @@ class App:
 
     def display_pause_buttons(self):
         self.buttons.append(Button(self.window,
-                                   text="Continue",
+                                   text="Resume",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    command=lambda: self.states_manager('resume'))
@@ -296,7 +311,9 @@ class App:
                                    text="Save",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: save_game(self.canvas.coords(self.player), self.coins, self.buttons[1]))
+                                   command=lambda: save_game(self.canvas.coords(self.player),
+                                                             self.coins_removed,
+                                                             self.buttons[1]))
                             )
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
 
@@ -388,7 +405,7 @@ class App:
                 self.buttons[button_index].configure(background='red', text='Error!')
 
             elif key_name in self.keySettings.values():
-                self.buttons[button_index].configure(background='red', text='Conflict!')
+                self.buttons[button_index].configure(background='red', text='Already Used!')
 
             else:
                 self.window.unbind('<Key>', self.new_key)
@@ -403,8 +420,3 @@ class App:
                 os.mkdir('../save')
             with open("../save/settings.pickle", "wb") as key_settings:
                 pickle.dump(self.keySettings, key_settings)
-
-
-
-
-

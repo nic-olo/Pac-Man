@@ -25,15 +25,14 @@ MAZE_PATH = "../GameBoard/GameBoard.png"
 MAZE_COORDINATES_PATH = "../GameBoard/GameBoardWalls.txt"
 
 DEFAULT_KEY_SETTINGS = {
-        'left': '<Left>',
-        'right': '<Right>',
-        'up': '<Up>',
-        'down': '<Down>',
-        'escape': '<Escape>',
-        'cheat': '<c>',
-        'boss': '<b>'
+    'left': '<Left>',
+    'right': '<Right>',
+    'up': '<Up>',
+    'down': '<Down>',
+    'escape': '<Escape>',
+    'cheat': '<c>',
+    'boss': '<b>'
 }
-
 
 BUTTON_WIDTH = int(11 * WINDOW_WIDTH / WINDOW_HEIGHT)
 BUTTON_HEIGHT = int(5 * WINDOW_HEIGHT / WINDOW_WIDTH)
@@ -54,16 +53,25 @@ BUTTON_6_Y = BUTTON_5_Y + BUTTONS_OFFSET
 BUTTON_7_X = BUTTON_1_X
 BUTTON_7_Y = BUTTON_6_Y + BUTTONS_OFFSET
 
-PLAYER_DIMENSIONS = 25
+PLAYER_DIMENSIONS = 16
 PLAYER_X1 = 632
-PLAYER_X2 = 648
+PLAYER_X2 = PLAYER_X1 + PLAYER_DIMENSIONS
 PLAYER_Y1 = 472
-PLAYER_Y2 = 488
+PLAYER_Y2 = PLAYER_Y1 + PLAYER_DIMENSIONS
+
+PLAYER_COORDINATES = [PLAYER_X1, PLAYER_Y1, PLAYER_X2, PLAYER_Y2]
 
 RECTANGLE_X1 = 631
 RECTANGLE_X2 = 649
 RECTANGLE_Y1 = 470
 RECTANGLE_Y2 = 491
+
+ENEMY_COLORS = ['blue', 'red', 'purple', 'orange']
+ENEMY_SPEEDS = [0.8, 1.5, 1.5, 0.8]
+ENEMY_X1 = 1
+ENEMY_X2 = ENEMY_X1 + PLAYER_DIMENSIONS
+ENEMY_Y1 = 2
+ENEMY_Y2 = ENEMY_Y1 + PLAYER_DIMENSIONS  # the dimensions of the enemies are the same of the player
 
 COINS_RATIO = 7
 COIN_SIZE_X = CELL_WIDTH / CELL_HEIGHT * COINS_RATIO
@@ -72,7 +80,7 @@ COIN_SIZE_Y = CELL_HEIGHT / CELL_HEIGHT * COINS_RATIO
 PLAYER_COLOR = '#FFFF00'
 COINS_COLOR = '#FFD700'
 
-PLAYER_SPEED = 1.6
+PLAYER_SPEED = 1.8
 # TODO bind PLAYER_SPEED and FPS
 FPS = 60
 DELAY = int(1000 / FPS)  # round the number to avoid errors
