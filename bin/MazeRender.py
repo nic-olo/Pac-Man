@@ -1,18 +1,28 @@
 from settings import *
+from CanvasManager import update_score
 
 
 def rendMaze(window):
     pass
 
 
-def wallsCoordinates(path):
-    file = open(path, 'r')
+def make_walls(path, canvas):
     walls = []
-    for i in range(GRID_ROWS):
-        line = file.readline()
-        for j in range(GRID_COLUMNS):
-            if line[j] == 'W':
-                walls.append([j, i])
+    with open(path, 'r') as file:
+        for i in range(GRID_ROWS):
+            line = file.readline()
+            for j in range(GRID_COLUMNS):
+                if line[j] == 'W':
+                    walls.append([j, i])
+
+    for i in range(len(walls)):
+        wall_id = canvas.create_rectangle(GRID_START_X + CELL_WIDTH * walls[i][0],
+                                          GRID_START_Y + CELL_HEIGHT * walls[i][1],
+                                          GRID_START_X + CELL_WIDTH * (walls[i][0] + 1),
+                                          GRID_START_Y + CELL_HEIGHT * (walls[i][1] + 1),
+                                          fill=COINS_COLOR)
+        walls[i].append(wall_id)
+
     return walls
 
 
@@ -45,4 +55,37 @@ def coinsRender(path, canvas, coins_removed, state):
     return coins
 
 
+def coin_collision(app):
+    direction = app.direction
+    coins = app.coins
+    canvas = app.canvas
 
+    for coin in coins:
+        player_coords = canvas.coords(app.player)
+        temp = False
+        if direction == 'left' and \
+                abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0] - COIN_SIZE_X)) < 9:
+            if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 13:
+                temp = True
+
+        elif direction == 'right' and abs(
+                player_coords[2] - (GRID_START_X + CELL_WIDTH * coin[0] + COIN_SIZE_X)) < 3:
+            if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1])) < 13:
+                temp = True
+
+        elif direction == 'up' and abs(
+                player_coords[1] - (GRID_START_Y + CELL_HEIGHT * coin[1] - COIN_SIZE_Y)) < 18:
+            if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 13:
+                temp = True
+
+        elif direction == 'down' and abs(
+                player_coords[3] - (GRID_START_Y + CELL_HEIGHT * coin[1] + COIN_SIZE_Y)) < 3:
+            if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * coin[0])) < 13:
+                temp = True
+
+        if temp:
+            canvas.delete(coin[2])
+            app.coins_removed.append(coin)
+            coins.remove(coin)
+            app.score += 1
+            update_score(canvas, app.scoreText, app.score)

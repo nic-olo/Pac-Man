@@ -1,7 +1,7 @@
 from tkinter import *
 
-from PIL import Image, ImageTk
 
+from tkinter import PhotoImage
 from settings import *
 
 
@@ -11,21 +11,19 @@ def makeCanvas(window):
 
 
 def setImage(path):
-    image = Image.open(path)
-    image = image.resize((IMG_WIDTH, IMG_HEIGHT), Image.ANTIALIAS)
-    image = ImageTk.PhotoImage(image)
+    image = PhotoImage(path)
     return image
 
 
 def makeLines(canvas):
     lines = []
-    for i in range(0, GRID_COLUMNS+1):
+    for i in range(0, GRID_COLUMNS + 1):
         lines.append(canvas.create_line(GRID_START_X + CELL_WIDTH * i, GRID_START_Y,
-                           GRID_START_X + CELL_WIDTH * i, GRID_STOP_Y, fill="white"))
+                                        GRID_START_X + CELL_WIDTH * i, GRID_STOP_Y, fill="white"))
 
-    for i in range(0, GRID_ROWS+1):
+    for i in range(0, GRID_ROWS + 1):
         lines.append(canvas.create_line(GRID_START_X, GRID_START_Y + CELL_HEIGHT * i, GRID_STOP_X,
-                           GRID_START_Y + CELL_HEIGHT * i,  fill="white"))
+                                        GRID_START_Y + CELL_HEIGHT * i, fill="white"))
     return lines
 
 
@@ -49,12 +47,16 @@ def update_score(canvas, scoreText, score):
     canvas.itemconfigure(scoreText, text=txt)
 
 
+def move_grid(sprite, positions):
+    """moving the grid"""
+    sprite.canvas.coords(sprite.grid,
+                         ((positions[0] + CELL_WIDTH // 2 - 1) // CELL_WIDTH) * CELL_WIDTH - 2,
+                         ((positions[1] + CELL_HEIGHT // 2 - 1) // CELL_HEIGHT) * CELL_HEIGHT + 6,
+                         ((positions[2] + CELL_WIDTH // 2 + 1) // CELL_WIDTH) * CELL_WIDTH - 2,
+                         ((positions[3] + CELL_HEIGHT // 2 + 1) // CELL_HEIGHT) * CELL_HEIGHT + 6)
+
+
 def move_player(window, canvas, player):
     canvas.pack()
     positions = [canvas.coords(player[0])]
     canvas.move(player[0], -2, 0)
-
-
-
-
-

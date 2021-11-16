@@ -23,6 +23,9 @@ CELL_HEIGHT = (GRID_STOP_Y - GRID_START_Y) / GRID_ROWS
 
 MAZE_PATH = "../GameBoard/GameBoard.png"
 MAZE_COORDINATES_PATH = "../GameBoard/GameBoardWalls.txt"
+GAME_OVER_PATH = '../GameBoard/GAME_OVER.png'
+CREDIT_TO_AUTHOR = '<a href="https://www.freepik.com/vectors/celebration">Celebration vector created by memetsaputra - www.freepik.com</a>'
+CREDIT = 'https://www.freepik.com/free-vector/modern-text-style-editable-glitch-text-effect_13791467.htm#page=1&query=game%20over&position=13&from_view=keyword'
 
 DEFAULT_KEY_SETTINGS = {
     'left': '<Left>',
@@ -31,15 +34,16 @@ DEFAULT_KEY_SETTINGS = {
     'down': '<Down>',
     'escape': '<Escape>',
     'cheat': '<c>',
-    'boss': '<b>'
+    'boss': '<b>',
+    'difficulty': 'normal'
 }
 
 BUTTON_WIDTH = int(11 * WINDOW_WIDTH / WINDOW_HEIGHT)
 BUTTON_HEIGHT = int(5 * WINDOW_HEIGHT / WINDOW_WIDTH)
 
-BUTTONS_OFFSET = 60
+BUTTONS_OFFSET = 70
 BUTTON_1_X = 550
-BUTTON_1_Y = 100
+BUTTON_1_Y = 30
 BUTTON_2_X = BUTTON_1_X
 BUTTON_2_Y = BUTTON_1_Y + BUTTONS_OFFSET
 BUTTON_3_X = BUTTON_1_X
@@ -52,6 +56,13 @@ BUTTON_6_X = BUTTON_1_X
 BUTTON_6_Y = BUTTON_5_Y + BUTTONS_OFFSET
 BUTTON_7_X = BUTTON_1_X
 BUTTON_7_Y = BUTTON_6_Y + BUTTONS_OFFSET
+BUTTON_8_X = BUTTON_1_X
+BUTTON_8_Y = BUTTON_7_Y + BUTTONS_OFFSET
+
+CONTROL_TEXTS_X = BUTTON_1_X - 100
+TEXTS_OFFSET = 25
+TEXTS_SIZE = 20
+BUTTON_TEXT_SIZE = 12
 
 PLAYER_DIMENSIONS = 16
 PLAYER_X1 = 632
@@ -66,12 +77,14 @@ RECTANGLE_X2 = 649
 RECTANGLE_Y1 = 470
 RECTANGLE_Y2 = 491
 
-ENEMY_COLORS = ['blue', 'red', 'purple', 'orange']
-ENEMY_SPEEDS = [0.8, 1.5, 1.5, 0.8]
+ENEMY_COLORS = ['lightblue', 'red', 'pink', 'orange']
+HARD_ENEMY_SPEEDS = [2.3, 2.8, 2.8, 2.3]
+NORMAL_ENEMY_SPEEDS = [1.5, 2, 2, 1.5]
 ENEMY_X1 = 1
 ENEMY_X2 = ENEMY_X1 + PLAYER_DIMENSIONS
 ENEMY_Y1 = 2
 ENEMY_Y2 = ENEMY_Y1 + PLAYER_DIMENSIONS  # the dimensions of the enemies are the same of the player
+ENEMY_RANGE = 4
 
 COINS_RATIO = 7
 COIN_SIZE_X = CELL_WIDTH / CELL_HEIGHT * COINS_RATIO
@@ -80,7 +93,7 @@ COIN_SIZE_Y = CELL_HEIGHT / CELL_HEIGHT * COINS_RATIO
 PLAYER_COLOR = '#FFFF00'
 COINS_COLOR = '#FFD700'
 
-PLAYER_SPEED = 1.8
+PLAYER_SPEED = 2.2
 # TODO bind PLAYER_SPEED and FPS
 FPS = 60
 DELAY = int(1000 / FPS)  # round the number to avoid errors
@@ -89,3 +102,10 @@ SCORE_POS_X = 180
 SCORE_POS_Y = 200
 HIGH_SCORE_POS_X = 1100
 HIGH_SCORE_POS_Y = 200
+
+LEADERBOARD_X_POSITION = WINDOW_WIDTH / 2
+LEADERBOARD_Y_POSITION = 150
+NAMES_X_POSITION = WINDOW_WIDTH / 2 - 120
+SCORES_X_POSITION = WINDOW_WIDTH / 2 + 120
+NAMES_Y_POSITION = LEADERBOARD_Y_POSITION + 60
+SCORES_Y_POSITION = NAMES_Y_POSITION
