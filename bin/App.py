@@ -1,29 +1,25 @@
-import pickle
-from tkinter import Button
-
-import os
-
-from CanvasManager import *  # specify the modules!!!!
+from CanvasManager import *  # TODO specify the modules!!!!
 from WindowManager import *
 from MazeRender import *
 from SavingMananger import *
+from sys import exit
 from Enemy import Enemy
-
-
-# from Player import Player
+from Player import Player
 
 
 class App:
     def __init__(self):
+        """initialize the game"""
+        self.hideWindow = False
         self.texts = []
         self.buttons = []
         self.window = makeWindow()
         self.canvas = makeCanvas(self.window)
         # self.image = setImage(MAZE_PATH)
-        self.load_default_key_settings()
+        self.settings = load_settings()
         self.configure_controls()
-        self.player_coords, self.coins_removed = play_game()
-        self.direction = None
+        self.coins_removed = []
+        self.player_direction = None
         self.leaderboard = load_leaderboard()
         self.prev_direction = None
         self.isPause = True
@@ -31,30 +27,37 @@ class App:
         self.score = 0
         self.enemies = []
 
-    def load_default_key_settings(self):
-        if os.path.exists("../save/settings.pickle"):
-            with open("../save/settings.pickle", 'rb') as key_settings:
-                self.keySettings = pickle.load(key_settings)
-        else:
-            self.keySettings = DEFAULT_KEY_SETTINGS
-
-    def startUp(self):
-        # self.gameBoard = self.canvas.create_image(640, 320, anchor=CENTER, image=self.image)
-        self.lines = makeLines(self.canvas)
-        self.makeRectangle()
-        self.playerSpeed = PLAYER_SPEED
-        self.walls = make_walls(MAZE_COORDINATES_PATH, self.canvas)
-        self.coins = coinsRender(MAZE_COORDINATES_PATH, self.canvas, self.coins_removed, self.state)
-        self.scoreText, self.highScoreText = display_scores(self.canvas)
-        self.make_enemies()
-        self.makePlayer()
-
     def run(self):
+        """run the game"""
         self.canvas.pack()
         self.display_menu()
         self.window.mainloop()
 
+    def startUp(self):
+        self.canvas.bind()
+        """creating all the objects needed to play"""
+        # self.gameBoard = self.canvas.create_image(640, 320, anchor=CENTER, image=self.image)
+        self.lines = make_lines(self.canvas)
+        self.make_grid()
+        self.walls = make_walls(MAZE_COORDINATES_PATH, self.canvas)
+        self.coins = coins_renderer(MAZE_COORDINATES_PATH, self.canvas, self.coins_removed, self.state)
+
+        try:
+            self.scoreText, self.highScoreText = display_scores(self.canvas, self.score, self.leaderboard[0]['score'])
+        except IndexError:
+            self.scoreText, self.highScoreText = display_scores(self.canvas, self.score, 0)
+
+        self.make_sprites()
+        self.state = 'start'
+
     def states_manager(self, state):
+        """This methods manages all the links between the various game windows by creating and destroying
+        the objects accordingly by calling other methods"""
+
+        """try:
+            self.color.destroy()
+        except:
+            pass"""
         self.state = state
         for button in self.buttons:
             button.destroy()
@@ -70,6 +73,7 @@ class App:
 
         else:
             self.isPause = True
+            self.player_direction = None
             if self.state == 'menu':
                 self.display_menu()
 
@@ -83,138 +87,84 @@ class App:
                 self.display_leaderboard()
 
             elif self.state == 'controls':
-                self.display_controls_menu()
+                self.display_options_menu()
 
     def play_game(self):
-        if self.state == 'start' or self.state == 'continue':
-            if self.state == 'start':
+        """start the game"""
+        if self.state == 'continue':
+            try:
+                self.player_coords, self.enemies_coords, self.coins_removed, self.score = continue_game()
+
+            except FileNotFoundError:
+                self.state = 'start'
                 self.coins_removed = []
+
             self.startUp()
+
+        elif self.state == 'start':
+            self.coins_removed = []
+            self.startUp()
+
         elif self.state == 'resume':
             self.change_objects_state('normal')
+
+        self.player.update()
         for enemy in self.enemies:
             enemy.update()
-        self.move_player()
 
-    def make_enemies(self):
+    def make_sprites(self):
+        """create the player and the enemies"""
         for i in range(4):
             self.enemies.append(Enemy(self, i + 1))
+        self.player = Player(self)
 
-    def makePlayer(self):
-        if self.state == 'start' or self.state == 'resume':
-            self.player = self.canvas.create_oval(PLAYER_COORDINATES, fill=PLAYER_COLOR)
-        else:
-            self.player = self.canvas.create_oval(self.player_coords, fill=PLAYER_COLOR)
-            self.state = 'start'
-
-    def makeRectangle(self):
+    def make_grid(self):
+        """make the grid surrounding the player"""
         self.grid = self.canvas.create_rectangle(RECTANGLE_X1, RECTANGLE_Y1,
-                                                 RECTANGLE_X2, RECTANGLE_Y2, outline="orange")
+                                                 RECTANGLE_X2, RECTANGLE_Y2,
+                                                 outline=PLAYER_COLOR
+                                                 )
+        self.canvas.itemconfigure(self.grid, state='hidden')
 
     def configure_controls(self):
+        """binds the controls the linked action"""
+
         def moveLeft(event):
-            self.direction = "left"
+            self.player_direction = "left"
 
         def moveRight(event):
-            self.direction = "right"
+            self.player_direction = "right"
 
         def moveUp(event):
-            self.direction = "up"
+            self.player_direction = "up"
 
         def moveDown(event):
-            self.direction = "down"
+            self.player_direction = "down"
 
         def escKey(event):
             if self.state == 'start' or self.state == 'resume':
                 self.states_manager('pause')
 
         def cheatKey(event):
-            if self.playerSpeed < 4:
-                self.playerSpeed += 0.2
+            if self.player.player_speed < 4:
+                self.player.player_speed += 0.2
 
         def bossKey(event):
             if not self.isPause:
                 self.states_manager('pause')
-            hide_window(self.window)
+            self.hide_window()
 
-        self.canvas.bind(self.keySettings['left'], moveLeft)
-        self.canvas.bind(self.keySettings['right'], moveRight)
-        self.canvas.bind(self.keySettings['up'], moveUp)
-        self.canvas.bind(self.keySettings['down'], moveDown)
-        self.canvas.bind(self.keySettings['escape'], escKey)
-        self.canvas.bind(self.keySettings['cheat'], cheatKey)
-        self.canvas.bind(self.keySettings['boss'], bossKey)
+        self.canvas.bind(self.settings['left'], moveLeft)
+        self.canvas.bind(self.settings['right'], moveRight)
+        self.canvas.bind(self.settings['up'], moveUp)
+        self.canvas.bind(self.settings['down'], moveDown)
+        self.canvas.bind(self.settings['escape'], escKey)
+        self.canvas.bind(self.settings['cheat'], cheatKey)
+        self.canvas.bind(self.settings['boss'], bossKey)
         self.canvas.focus_set()
 
-    def can_move(self):
-        player_coords = self.canvas.coords(self.player)
-        for wall in self.walls:
-            if self.direction == 'left' and \
-                    abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 2:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 8:
-                    self.direction = None
-
-            elif self.direction == 'right' and abs(player_coords[2] - (GRID_START_X + CELL_WIDTH * wall[0])) < 3:
-                if abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 10:
-                    self.direction = None
-
-            elif self.direction == 'up' and abs(player_coords[1] - (GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 2:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 4:
-                    self.direction = None
-
-            elif self.direction == 'down' and abs(player_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 2:
-                if abs(player_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 4:
-                    self.direction = None
-
-    def move_player(self):
-        def move_grid():
-            """moving the rectangle"""
-            if self.state == 'start' or self.state == 'resume':
-                self.canvas.coords(self.grid,
-                                   ((positions[0] + CELL_WIDTH // 2 - 1) // CELL_WIDTH) * CELL_WIDTH - 2,
-                                   ((positions[1] + CELL_HEIGHT // 2 - 1) // CELL_HEIGHT) * CELL_HEIGHT + 6,
-                                   ((positions[2] + CELL_WIDTH // 2 + 1) // CELL_WIDTH) * CELL_WIDTH - 2,
-                                   ((positions[3] + CELL_HEIGHT // 2 + 1) // CELL_HEIGHT) * CELL_HEIGHT + 6)
-                self.player_coords = self.canvas.coords(self.grid)
-
-        def inGrid():
-            if self.state == 'start' or self.state == 'resume':
-
-                if self.direction == 'up' or self.direction == 'down':
-                    offset = abs(((positions[0] - GRID_START_X) % CELL_WIDTH) - CELL_WIDTH)
-                    if 3 < offset < 15:
-                        self.direction = self.prev_direction
-
-                if self.direction == 'left' or self.direction == 'right':
-                    offset = abs(((positions[1] - GRID_START_Y) % CELL_HEIGHT) - CELL_HEIGHT)
-                    if 3 < offset < 15:
-                        self.direction = self.prev_direction
-
-        self.canvas.pack()
-        positions = self.canvas.coords(self.player)
-        inGrid()
-        coin_collision(self)
-        self.can_move()
-
-        if self.direction == 'left':
-            self.canvas.move(self.player, -self.playerSpeed, 0)
-
-        elif self.direction == 'right':
-            self.canvas.move(self.player, self.playerSpeed, 0)
-
-        elif self.direction == 'up':
-            self.canvas.move(self.player, 0, -self.playerSpeed)
-
-        elif self.direction == 'down':
-            self.canvas.move(self.player, 0, self.playerSpeed)
-
-        self.prev_direction = self.direction
-        move_grid()
-
-        if self.state == 'start' or self.state == 'resume':
-            self.window.after(DELAY, self.move_player)
-
     def display_menu(self):
+        """display the menu"""
         self.display_menu_buttons()
 
     def display_menu_buttons(self):
@@ -241,23 +191,24 @@ class App:
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
 
         self.buttons.append(Button(self.window,
-                                   text="Controls",
+                                   text="Options",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    command=lambda: self.states_manager('controls')))
         self.buttons[-1].place(x=BUTTON_4_X, y=BUTTON_4_Y)
 
     def reset(self):
-        self.direction = None
+        """resets the game"""
+        self.player_direction = None
         self.prev_direction = None
         self.score = 0
-        self.canvas.itemconfigure(self.player, state='hidden')
+        self.canvas.itemconfigure(self.player.player, state='hidden')
         # self.canvas.delete(self.gameBoard)
         self.canvas.delete(self.grid)
         for line in self.lines:
             self.canvas.delete(line)
         for enemy in self.enemies:
-            enemy.direction = None
+            enemy.player_direction = None
             self.canvas.itemconfigure(enemy.enemy, state='hidden')
 
         self.remove_coins()
@@ -265,24 +216,27 @@ class App:
         self.canvas.delete(self.highScoreText)
 
     def remove_coins(self):
+        """remove the coins when continuing an old game"""
         for coin in self.coins:
             self.canvas.delete(coin[2])
 
     def display_pause_menu(self):
-        self.direction = None
+        """display the menu when the game is paused"""
+        self.player_direction = None
         self.change_objects_state('hidden')
         self.display_pause_buttons()
 
     def change_objects_state(self, state):
-        self.canvas.itemconfigure(self.player, state=state)
+        """change the state of the objects between hidden and normal"""
+        self.canvas.itemconfigure(self.player.player, state=state)
         # self.canvas.itemconfigure(self.gameBoard, state=state)
-        self.canvas.itemconfigure(self.grid, state=state)
-        for line in self.lines:
-            self.canvas.itemconfigure(line, state=state)
+        # self.canvas.itemconfigure(self.grid, state=state)
+        # for line in self.lines:
+        # self.canvas.itemconfigure(line, state=state)
         for enemy in self.enemies:
-            enemy.direction = None
+            enemy.player_direction = None
             self.canvas.itemconfigure(enemy.enemy, state=state)
-            self.canvas.itemconfigure(enemy.grid, state=state)
+            # self.canvas.itemconfigure(enemy.grid, state=state)
         for wall in self.walls:
             self.canvas.itemconfigure(wall[2], state=state)
         for coin in self.coins:
@@ -291,6 +245,7 @@ class App:
         self.canvas.itemconfigure(self.highScoreText, state=state)
 
     def display_pause_buttons(self):
+        """display the buttons when the game is paused"""
         self.buttons.append(Button(self.window,
                                    text="Resume",
                                    width=BUTTON_WIDTH,
@@ -303,8 +258,11 @@ class App:
                                    text="Save",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
-                                   command=lambda: save_game(self.canvas.coords(self.player),
+                                   command=lambda: save_game(self.canvas.coords(self.player.player),
+                                                             list(self.canvas.coords(self.enemies[i].enemy) for i in
+                                                                  range(4)),
                                                              self.coins_removed,
+                                                             self.score,
                                                              self.buttons[1]))
                             )
         self.buttons[-1].place(x=BUTTON_2_X, y=BUTTON_2_Y)
@@ -317,10 +275,10 @@ class App:
                             )
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
 
-    def display_controls_menu(self):
-
+    def display_options_menu(self):
+        """display the options menu"""
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['left'],
+                                   text=self.settings['left'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -335,7 +293,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['right'],
+                                   text=self.settings['right'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -350,7 +308,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['up'],
+                                   text=self.settings['up'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -365,7 +323,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['down'],
+                                   text=self.settings['down'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -380,7 +338,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['escape'],
+                                   text=self.settings['escape'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -395,7 +353,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['cheat'],
+                                   text=self.settings['cheat'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -410,7 +368,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['boss'],
+                                   text=self.settings['boss'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -425,7 +383,7 @@ class App:
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
-                                   text=self.keySettings['difficulty'],
+                                   text=self.settings['difficulty'],
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    font=('Arial', BUTTON_TEXT_SIZE),
@@ -439,6 +397,27 @@ class App:
                                                   text='Difficulty',
                                                   fill='white'))
 
+        """self.buttons.append(Button(self.window,
+                                   text='Confirm',
+                                   width=BUTTON_WIDTH,
+                                   height=BUTTON_HEIGHT,
+                                   font=('Arial', BUTTON_TEXT_SIZE),
+                                   command=lambda: self.change_color())
+                            )
+        self.buttons[-1].place(x=BUTTON_9_X, y=BUTTON_9_Y)
+
+        self.color = Entry(self.window,
+                           font=('Arial', 25),
+                           width=9)
+
+        self.color.place(x=COLOR_ENTRY_X, y=COLOR_ENTRY_Y)
+
+        self.texts.append(self.canvas.create_text(CONTROL_TEXTS_X,
+                                                  BUTTON_9_Y + TEXTS_OFFSET,
+                                                  font=('Arial', TEXTS_SIZE),
+                                                  text='Player Color',
+                                                  fill='white'))"""
+
         self.buttons.append(Button(self.window,
                                    text="Menu",
                                    width=BUTTON_WIDTH,
@@ -447,42 +426,48 @@ class App:
                             )
         self.buttons[-1].place(x=100, y=100)
 
+    """def change_color(self):
+        new_color = self.color.get().strip()
+        Button(background=new_color)
+        self.player_color = new_color
+        self.settings['color'] = new_color
+        self.window.unbind('<Key>', self.color)
+        update_settings(self.settings)"""
+
     def onButtonPress(self, key):
+        """change the options when a button is pressed"""
         if key == 'difficulty':
-            self.keySettings[key] = 'hard' if self.keySettings[key] == 'normal' else 'normal'
-            self.buttons[7].configure(text=self.keySettings[key])
-            update_default_key_settings(self.keySettings)
+            self.settings[key] = 'hard' if self.settings[key] == 'normal' else 'normal'
+            self.buttons[7].configure(text=self.settings[key])
+            update_settings(self.settings)
 
         else:
-            for i, (_, control_name) in enumerate(self.keySettings.items()):
+            for i, (_, control_name) in enumerate(self.settings.items()):
                 self.buttons[i].configure(background='white', text=control_name)
 
-            button_index = list(self.keySettings).index(key)
+            button_index = list(self.settings).index(key)
             self.buttons[button_index].configure(text='Press a Key')
 
             self.new_key = self.window.bind('<Key>', lambda event: change_key(event))
 
-        def change_key(event, callfrom):
+        def change_key(event):
             key_name = '<' + event.keysym + '>'
-            if key_name == '<??>':
-                self.buttons[button_index].configure(background='red', text='Error!')
-
-            elif key_name in self.keySettings.values():
+            self.window.unbind('<Key>', self.new_key)
+            if key_name in self.settings.values():
                 self.buttons[button_index].configure(background='red', text='Already Used!')
-
             else:
-                self.window.unbind('<Key>', self.new_key)
                 self.buttons[button_index].configure(text=key_name)
-                self.keySettings[key] = key_name
+                self.settings[key] = key_name
 
             self.configure_controls()
-            update_default_key_settings(self.keySettings)
+            update_settings(self.settings)
 
     def display_leaderboard(self):
+        """display the leaderboard"""
         self.texts.append(self.canvas.create_text(LEADERBOARD_X_POSITION,
                                                   LEADERBOARD_Y_POSITION,
                                                   font=('Arial', 40),
-                                                  text='Leaderboard (Top 5)',
+                                                  text='Leaderboard (Top 8)',
                                                   fill='green'))
 
         self.texts.append(self.canvas.create_text(NAMES_X_POSITION,
@@ -494,7 +479,7 @@ class App:
         self.texts.append(self.canvas.create_text(SCORES_X_POSITION,
                                                   SCORES_Y_POSITION,
                                                   font=('Arial', 30),
-                                                  text='Scores',
+                                                  text='Score',
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
@@ -505,42 +490,104 @@ class App:
                             )
         self.buttons[-1].place(x=100, y=100)
 
-        for i in range(min(5, len(self.leaderboard))):
-            name = self.leaderboard['names'][i]
-            score = self.leaderboard['scores'][i]
+        for i in range(min(8, len(self.leaderboard))):
+            name = self.leaderboard[i]['name']
+            score = self.leaderboard[i]['score']
 
-            self.texts.append(self.canvas.create_text(NAMES_X_POSITION,
-                                                      NAMES_Y_POSITION + 50 + i * 30,
+            self.texts.append(self.canvas.create_text(NAMES_X_POSITION - 180,
+                                                      NAMES_Y_POSITION + 50 + i * 40,
                                                       text=str(i + 1),
                                                       font=('Arial', 22),
+                                                      fill='white'
                                                       ))
 
             self.texts.append(self.canvas.create_text(NAMES_X_POSITION,
-                                                      NAMES_Y_POSITION + 50 + i * 30,
+                                                      NAMES_Y_POSITION + 50 + i * 40,
                                                       text=name,
                                                       font=('Arial', 22),
+                                                      fill='white'
                                                       ))
 
             self.texts.append(self.canvas.create_text(SCORES_X_POSITION,
-                                                      SCORES_Y_POSITION + 50 + i * 30,
-                                                      anchor='center',
+                                                      SCORES_Y_POSITION + 50 + i * 40,
                                                       text=score,
                                                       font=('Arial', 22),
+                                                      fill='white'
                                                       ))
 
     def display_game_over_menu(self):
-        self.direction = None
+        """display the menu when the game is over"""
         self.change_objects_state('hidden')
-        img = PhotoImage(file="../GameBoard/GAME_OVER.png")
-        self.canvas.create_image(200, 200, anchor=NW, image=img)
+        image = GAME_OVER_IMAGE_PATH if self.coins else WINNER_IMAGE_PATH
+        self.img = PhotoImage(file=image)
+        self.image = self.canvas.create_image(WINDOW_WIDTH // 2 + 20, 320, image=self.img, anchor=CENTER)
+
+        self.texts.append(self.canvas.create_text(GAME_OVER_SCORE_X,
+                                                  GAME_OVER_SCORE_Y,
+                                                  font=('Arial', 60, 'bold'),
+                                                  text=f'SCORE: {self.score}',
+                                                  fill='black'))
+
+        self.texts.append(self.canvas.create_text(GAME_OVER_TEXT_ENTRY_X,
+                                                  GAME_OVER_TEXT_ENTRY_Y,
+                                                  font=('Arial', TEXTS_SIZE, 'bold'),
+                                                  text='ENTER YOUR NAME',
+                                                  fill='#000000'))
+
+        self.user = Entry(self.window,
+                          font='Arial',
+                          width=20)
+
+        self.user.place(x=GAME_OVER_ENTRY_X, y=GAME_OVER_ENTRY_Y)
+        self.texts.append(self.canvas.create_text(GAME_OVER_SCORE_X,
+                                                  ERROR_MESSAGE_Y,
+                                                  font=('Arial', 30, 'bold'),
+                                                  fill='red'))
         self.buttons.append(Button(self.window,
-                                   text="Menu",
-                                   width=BUTTON_WIDTH,
-                                   height=BUTTON_HEIGHT,
-                                   command=lambda: self.states_manager('menu'))
-                            )
-        self.buttons[-1].place(x=100, y=100)
+                                   text="Confirm",
+                                   font='Arial',
+                                   command=lambda: self.save_user()
+                                   ))
 
+        self.buttons[-1].place(x=GAME_OVER_BUTTON_X, y=GAME_OVER_BUTTON_Y)
 
+    def save_user(self):
+        """save the name and the score of the user"""
+        user_entry = self.user.get().strip()
 
+        if not user_entry:
+            self.canvas.itemconfigure(self.texts[-1], text='Empty Name!')
+            return
+        if len(user_entry) > 12:
+            self.canvas.itemconfigure(self.texts[-1], text='Name too Long!')
+            return
 
+        data = {'name': user_entry, 'score': self.score}
+        for i in range(len(self.leaderboard)):
+            if self.score > self.leaderboard[i]['score']:
+                self.leaderboard.insert(i, data)
+                break
+        else:
+            self.leaderboard.append(data)
+
+        save_score(self.leaderboard)
+        self.user.destroy()
+        exit()
+
+    def hide_window(self):
+        if not self.hideWindow:
+            self.hideCanvas = Canvas(self.window, background='black',
+                                     width=WINDOW_WIDTH, height=WINDOW_HEIGHT, highlightthickness=0)
+            self.hideCanvas.place(x=0, y=0)
+            """hideWindow = Canvas(window,
+                                width=WINDOW_WIDTH,
+                                height=WINDOW_HEIGHT)"""
+            self.window.title("ThingsToDo.txt")
+            self.img = PhotoImage(file=BOSS_KEY_DOCUMENT_PATH)
+            self.boss = self.hideCanvas.create_image(0, -25, image=self.img, anchor=NW)
+            self.hideWindow = True
+
+        else:
+            self.hideCanvas.destroy()
+            self.window.title("Pac-Man")
+            self.hideWindow = False

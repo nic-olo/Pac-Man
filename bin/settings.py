@@ -1,5 +1,4 @@
-"""Declaring all the constants that I will need
-while developing this project."""
+"""Declaring all the constants needed for the development of the project"""
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -10,33 +9,34 @@ Y_WIN_POS = 0  # (hs/2) - (h/2) # TO FIX
 IMG_WIDTH = 560
 IMG_HEIGHT = 620
 
-GRID_START_X = 360
-GRID_STOP_X = 920
+GRID_START_X = 220
+GRID_STOP_X = 1060
 GRID_START_Y = 6
 GRID_STOP_Y = 632
 
-GRID_ROWS = 31
-GRID_COLUMNS = 31
+GRID_ROWS = 27
+GRID_COLUMNS = 35
 
 CELL_WIDTH = (GRID_STOP_X - GRID_START_X) / GRID_COLUMNS
 CELL_HEIGHT = (GRID_STOP_Y - GRID_START_Y) / GRID_ROWS
 
-MAZE_PATH = "../GameBoard/GameBoard.png"
-MAZE_COORDINATES_PATH = "../GameBoard/GameBoardWalls.txt"
-GAME_OVER_PATH = '../GameBoard/GAME_OVER.png'
-CREDIT_TO_AUTHOR = '<a href="https://www.freepik.com/vectors/celebration">Celebration vector created by memetsaputra - www.freepik.com</a>'
-CREDIT = 'https://www.freepik.com/free-vector/modern-text-style-editable-glitch-text-effect_13791467.htm#page=1&query=game%20over&position=13&from_view=keyword'
 
-DEFAULT_KEY_SETTINGS = {
-    'left': '<Left>',
-    'right': '<Right>',
-    'up': '<Up>',
-    'down': '<Down>',
-    'escape': '<Escape>',
-    'cheat': '<c>',
-    'boss': '<b>',
-    'difficulty': 'normal'
-}
+MAZE_COORDINATES_PATH = "../Files/GameBoardWalls.txt"
+SAVE_PATH = "../save"
+LEADER_BOARD_PATH = SAVE_PATH + "/leaderboard.pickle"
+SETTINGS_PATH = SAVE_PATH + "/settings.pickle"
+GAME_SAVE_PATH = SAVE_PATH + "/game_save.pickle"
+BOSS_KEY_DOCUMENT_PATH = '../Files/ThingsToDo.png'
+
+GAME_OVER_IMAGE_PATH = '../Files/game_over.png'
+WINNER_IMAGE_PATH = '../Files/winner.png'
+"""
+***CREDIT FOR THE IMAGES***
+ https://www.freepik.com/vectors/celebration Celebration vector created by memetsaputra - www.freepik.com
+ https://www.freepik.com/vectors/cartoon Cartoon vector created by memetsaputra - www.freepik.com
+***CREATED BY memetsaputra***
+"""
+
 
 BUTTON_WIDTH = int(11 * WINDOW_WIDTH / WINDOW_HEIGHT)
 BUTTON_HEIGHT = int(5 * WINDOW_HEIGHT / WINDOW_WIDTH)
@@ -58,28 +58,45 @@ BUTTON_7_X = BUTTON_1_X
 BUTTON_7_Y = BUTTON_6_Y + BUTTONS_OFFSET
 BUTTON_8_X = BUTTON_1_X
 BUTTON_8_Y = BUTTON_7_Y + BUTTONS_OFFSET
+BUTTON_9_X = BUTTON_1_X + 190
+BUTTON_9_Y = BUTTON_8_Y + BUTTONS_OFFSET
+COLOR_ENTRY_X = BUTTON_9_X - 190
+COLOR_ENTRY_Y = BUTTON_9_Y + 5
 
 CONTROL_TEXTS_X = BUTTON_1_X - 100
 TEXTS_OFFSET = 25
 TEXTS_SIZE = 20
 BUTTON_TEXT_SIZE = 12
 
-PLAYER_DIMENSIONS = 16
-PLAYER_X1 = 632
+GAME_OVER_IMAGE_X = WINDOW_WIDTH / 2
+GAME_OVER_IMAGE_Y = 150
+GAME_OVER_SCORE_X = GAME_OVER_IMAGE_X
+GAME_OVER_SCORE_Y = GAME_OVER_IMAGE_Y + 60
+GAME_OVER_TEXT_ENTRY_X = GAME_OVER_IMAGE_X - 200
+GAME_OVER_TEXT_ENTRY_Y = GAME_OVER_IMAGE_Y + 150
+GAME_OVER_ENTRY_X = GAME_OVER_TEXT_ENTRY_X + 150
+GAME_OVER_ENTRY_Y = GAME_OVER_TEXT_ENTRY_Y - 13
+GAME_OVER_BUTTON_X = GAME_OVER_ENTRY_X + 240
+GAME_OVER_BUTTON_Y = GAME_OVER_ENTRY_Y - 5
+ERROR_MESSAGE_Y = GAME_OVER_ENTRY_Y + 60
+
+PLAYER_DIMENSIONS = 18
+PLAYER_X1 = 3
 PLAYER_X2 = PLAYER_X1 + PLAYER_DIMENSIONS
-PLAYER_Y1 = 472
-PLAYER_Y2 = PLAYER_Y1 + PLAYER_DIMENSIONS
+PLAYER_Y1 = 3
+PLAYER_Y2 = PLAYER_Y1 + PLAYER_DIMENSIONS  # the dimensions of the enemies are the same of the player
 
-PLAYER_COORDINATES = [PLAYER_X1, PLAYER_Y1, PLAYER_X2, PLAYER_Y2]
 
-RECTANGLE_X1 = 631
-RECTANGLE_X2 = 649
-RECTANGLE_Y1 = 470
-RECTANGLE_Y2 = 491
+PLAYER_COORDINATES = [PLAYER_X1, PLAYER_X1, PLAYER_X2, PLAYER_Y2]
+
+RECTANGLE_X1 = 628
+RECTANGLE_X2 = RECTANGLE_X1 + 24
+RECTANGLE_Y1 = 307
+RECTANGLE_Y2 = RECTANGLE_Y1 + 24
 
 ENEMY_COLORS = ['lightblue', 'red', 'pink', 'orange']
-HARD_ENEMY_SPEEDS = [2.3, 2.8, 2.8, 2.3]
-NORMAL_ENEMY_SPEEDS = [1.5, 2, 2, 1.5]
+HARD_ENEMY_SPEEDS = [2.8, 3.2, 3.2, 2.8]
+NORMAL_ENEMY_SPEEDS = [1.8, 2, 2, 1.8]
 ENEMY_X1 = 1
 ENEMY_X2 = ENEMY_X1 + PLAYER_DIMENSIONS
 ENEMY_Y1 = 2
@@ -92,20 +109,35 @@ COIN_SIZE_Y = CELL_HEIGHT / CELL_HEIGHT * COINS_RATIO
 
 PLAYER_COLOR = '#FFFF00'
 COINS_COLOR = '#FFD700'
+MAZE_COLOR = '#1C1CB9'
+CANVAS_COLOR = '#050C1D'
 
-PLAYER_SPEED = 2.2
+PLAYER_SPEED = 2.4
 # TODO bind PLAYER_SPEED and FPS
 FPS = 60
 DELAY = int(1000 / FPS)  # round the number to avoid errors
 
-SCORE_POS_X = 180
+SCORE_POS_X = 120
 SCORE_POS_Y = 200
-HIGH_SCORE_POS_X = 1100
-HIGH_SCORE_POS_Y = 200
+HIGH_SCORE_POS_X = WINDOW_WIDTH - SCORE_POS_X
+HIGH_SCORE_POS_Y = SCORE_POS_Y
 
 LEADERBOARD_X_POSITION = WINDOW_WIDTH / 2
-LEADERBOARD_Y_POSITION = 150
+LEADERBOARD_Y_POSITION = 120
 NAMES_X_POSITION = WINDOW_WIDTH / 2 - 120
 SCORES_X_POSITION = WINDOW_WIDTH / 2 + 120
 NAMES_Y_POSITION = LEADERBOARD_Y_POSITION + 60
 SCORES_Y_POSITION = NAMES_Y_POSITION
+
+
+DEFAULT_SETTINGS = {
+    'left': '<Left>',
+    'right': '<Right>',
+    'up': '<Up>',
+    'down': '<Down>',
+    'escape': '<Escape>',
+    'cheat': '<c>',
+    'boss': '<b>',
+    'difficulty': 'normal',
+   # 'color': PLAYER_COLOR
+}

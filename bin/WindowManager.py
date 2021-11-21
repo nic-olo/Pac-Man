@@ -1,8 +1,11 @@
-from tkinter import Tk, Button, Canvas
+"""a collection of some methods that involve the main window"""
+from tkinter import Tk, Canvas, PhotoImage, CENTER
 from settings import *
+import os
 
 
 def makeWindow():
+    """create the window"""
     window = Tk()
     window.title("Pac-Man")
     window.geometry("%dx%d+%d+%d" %
@@ -12,20 +15,6 @@ def makeWindow():
 
 
 hideWindow = None
+boss = None
 
 
-def hide_window(window):
-    global hideWindow
-    if not hideWindow:
-        hideWindow = Canvas(window,
-                            width=WINDOW_WIDTH,
-                            height=WINDOW_HEIGHT,
-                            highlightthickness=0)
-        window.title("Project")
-        window.attributes("-alpha", 0)
-
-    else:
-        hideWindow.destroy()
-        window.title("Pac-Man")
-        window.attributes("-alpha", 1)
-        hideWindow = None
