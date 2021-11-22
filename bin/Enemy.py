@@ -14,7 +14,8 @@ class Enemy:
         self.canvas = self.app.canvas
         self.enemy_coords = []
         self.target = None
-        self.enemy_speed = HARD_ENEMY_SPEEDS[self.enemy_number - 1] if self.app.settings['difficulty'] == 'hard' \
+        self.enemy_speed = HARD_ENEMY_SPEEDS[self.enemy_number - 1] if \
+            self.app.settings['difficulty'] == 'hard' \
             else NORMAL_ENEMY_SPEEDS[self.enemy_number - 1]
         self.enemy_color = ENEMY_COLORS[self.enemy_number - 1]
         self.make_enemy()
@@ -23,8 +24,9 @@ class Enemy:
     def make_enemy(self):
         """create the enemy"""
         if self.app.state == 'continue':
-            self.enemy = self.canvas.create_oval(self.app.enemies_coords[self.enemy_number - 1],
-                                                 fill=self.enemy_color)
+            self.enemy = self.canvas.create_oval(
+                self.app.enemies_coords[self.enemy_number - 1],
+                fill=self.enemy_color)
             return
         file = open(MAZE_COORDINATES_PATH, 'r')
 
@@ -37,11 +39,12 @@ class Enemy:
 
         file.close()
 
-        self.enemy = self.canvas.create_oval(GRID_START_X + CELL_WIDTH * self.enemy_pos[0] + ENEMY_X1,
-                                             GRID_START_Y + CELL_HEIGHT * self.enemy_pos[1] + ENEMY_Y1,
-                                             GRID_START_X + CELL_WIDTH * (self.enemy_pos[0]) + ENEMY_X2,
-                                             GRID_START_Y + CELL_HEIGHT * (self.enemy_pos[1]) + ENEMY_Y2,
-                                             fill=self.enemy_color)
+        self.enemy = self.canvas.create_oval(
+            GRID_START_X + CELL_WIDTH * self.enemy_pos[0] + ENEMY_X1,
+            GRID_START_Y + CELL_HEIGHT * self.enemy_pos[1] + ENEMY_Y1,
+            GRID_START_X + CELL_WIDTH * (self.enemy_pos[0]) + ENEMY_X2,
+            GRID_START_Y + CELL_HEIGHT * (self.enemy_pos[1]) + ENEMY_Y2,
+            fill=self.enemy_color)
 
     def make_enemy_grid(self):
         """create the grid that surrounds the enemy"""
@@ -60,24 +63,32 @@ class Enemy:
     def can_move(self):
         """block the player from passing through a wall"""
         for wall in self.app.walls:
-            if self.direction == 'left' and abs(self.enemy_coords[0] - (GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 3:
-                if abs(self.enemy_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 12:
+            if self.direction == 'left' and abs(self.enemy_coords[0] - (
+                    GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 3:
+                if abs(self.enemy_coords[1] - (
+                        GRID_START_Y + CELL_HEIGHT * wall[1])) < 12:
                     self.direction = None
                     return 1
 
-            elif self.direction == 'right' and abs(self.enemy_coords[2] - (GRID_START_X + CELL_WIDTH * wall[0])) < 3:
-                if abs(self.enemy_coords[1] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 12:
+            elif self.direction == 'right' and abs(self.enemy_coords[2] - (
+                    GRID_START_X + CELL_WIDTH * wall[0])) < 3:
+                if abs(self.enemy_coords[1] - (
+                        GRID_START_Y + CELL_HEIGHT * wall[1])) < 12:
                     self.direction = None
                     return 2
 
             elif self.direction == 'up' and abs(
-                    self.enemy_coords[1] - (GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 3:
-                if abs(self.enemy_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 12:
+                    self.enemy_coords[1] - (
+                            GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 3:
+                if abs(self.enemy_coords[0] - (
+                        GRID_START_X + CELL_WIDTH * wall[0])) < 12:
                     self.direction = None
                     return 3
 
-            elif self.direction == 'down' and abs(self.enemy_coords[3] - (GRID_START_Y + CELL_HEIGHT * wall[1])) < 3:
-                if abs(self.enemy_coords[0] - (GRID_START_X + CELL_WIDTH * wall[0])) < 12:
+            elif self.direction == 'down' and abs(self.enemy_coords[3] - (
+                    GRID_START_Y + CELL_HEIGHT * wall[1])) < 3:
+                if abs(self.enemy_coords[0] - (
+                        GRID_START_X + CELL_WIDTH * wall[0])) < 12:
                     self.direction = None
                     return 4
 
@@ -89,12 +100,14 @@ class Enemy:
             """check if the enemy is in the grid"""
             if self.app.state == 'start' or self.app.state == 'resume':
                 if self.direction == 'up' or self.direction == 'down':
-                    offset = abs(((self.enemy_coords[0] - GRID_START_X) % CELL_WIDTH) - CELL_WIDTH)
+                    offset = abs(((self.enemy_coords[0] -
+                                   GRID_START_X) % CELL_WIDTH) - CELL_WIDTH)
                     if 2 < offset < 16:
                         self.direction = self.prev_direction
 
                 if self.direction == 'left' or self.direction == 'right':
-                    offset = abs(((self.enemy_coords[1] - GRID_START_Y) % CELL_HEIGHT) - CELL_HEIGHT)
+                    offset = abs(((self.enemy_coords[1] -
+                                   GRID_START_Y) % CELL_HEIGHT) - CELL_HEIGHT)
                     if 2 < offset < 16:
                         self.direction = self.prev_direction
 
@@ -130,8 +143,10 @@ class Enemy:
 
     def player_collision(self):
         """check for a collision with the player"""
-        if self.enemy_coords[0] < self.target[2] and self.enemy_coords[2] > self.target[0] and \
-                self.enemy_coords[1] < self.target[3] and self.enemy_coords[3] > self.target[1]:
+        if self.enemy_coords[0] < self.target[2] and self.enemy_coords[2] > \
+                self.target[0] and \
+                self.enemy_coords[1] < self.target[3] and \
+                self.enemy_coords[3] > self.target[1]:
             if self.app.state == 'start' or self.app.state == 'resume':
                 self.app.states_manager('GameOver')
 

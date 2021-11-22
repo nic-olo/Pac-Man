@@ -3,8 +3,8 @@
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
-X_WIN_POS = 0  # (ws/2) - (w/2) # calculate center
-Y_WIN_POS = 0  # (hs/2) - (h/2) # TO FIX
+X_WIN_POS = 0
+Y_WIN_POS = 0
 
 IMG_WIDTH = 560
 IMG_HEIGHT = 620
@@ -32,8 +32,10 @@ GAME_OVER_IMAGE_PATH = '../Files/game_over.png'
 WINNER_IMAGE_PATH = '../Files/winner.png'
 """
 ***CREDIT FOR THE IMAGES***
- https://www.freepik.com/vectors/celebration Celebration vector created by memetsaputra - www.freepik.com
- https://www.freepik.com/vectors/cartoon Cartoon vector created by memetsaputra - www.freepik.com
+ https://www.freepik.com/vectors/celebration Celebration vector 
+ created by memetsaputra - www.freepik.com
+ https://www.freepik.com/vectors/cartoon Cartoon vector 
+ created by memetsaputra - www.freepik.com
 ***CREATED BY memetsaputra***
 """
 
@@ -80,11 +82,11 @@ GAME_OVER_BUTTON_X = GAME_OVER_ENTRY_X + 240
 GAME_OVER_BUTTON_Y = GAME_OVER_ENTRY_Y - 5
 ERROR_MESSAGE_Y = GAME_OVER_ENTRY_Y + 60
 
-PLAYER_DIMENSIONS = 18
+PLAYER_DIMENSIONS = 17
 PLAYER_X1 = 3
 PLAYER_X2 = PLAYER_X1 + PLAYER_DIMENSIONS
 PLAYER_Y1 = 3
-PLAYER_Y2 = PLAYER_Y1 + PLAYER_DIMENSIONS  # the dimensions of the enemies are the same of the player
+PLAYER_Y2 = PLAYER_Y1 + PLAYER_DIMENSIONS
 
 
 PLAYER_COORDINATES = [PLAYER_X1, PLAYER_X1, PLAYER_X2, PLAYER_Y2]
@@ -100,7 +102,8 @@ NORMAL_ENEMY_SPEEDS = [1.8, 2, 2, 1.8]
 ENEMY_X1 = 1
 ENEMY_X2 = ENEMY_X1 + PLAYER_DIMENSIONS
 ENEMY_Y1 = 2
-ENEMY_Y2 = ENEMY_Y1 + PLAYER_DIMENSIONS  # the dimensions of the enemies are the same of the player
+ENEMY_Y2 = ENEMY_Y1 + PLAYER_DIMENSIONS
+# the dimensions of the enemies are the same of the player
 ENEMY_RANGE = 4
 
 COINS_RATIO = 7
@@ -139,5 +142,6 @@ DEFAULT_SETTINGS = {
     'cheat': '<c>',
     'boss': '<b>',
     'difficulty': 'normal',
-   # 'color': PLAYER_COLOR
+    'color': PLAYER_COLOR
 }
+
