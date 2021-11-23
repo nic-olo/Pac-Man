@@ -73,3 +73,7 @@ def coin_collision(app):
             coins.remove(coin)
             app.score += 1
             update_score(canvas, app.scoreText, app.score)
+
+    if not coins:
+        app.coins = coins_renderer(MAZE_COORDINATES_PATH, canvas, [],
+                                   'start')

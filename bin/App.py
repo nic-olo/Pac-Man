@@ -29,7 +29,6 @@ class App:
         # self.image = setImage(MAZE_PATH)
         self.settings = load_settings()
         self.configure_controls()
-        self.coins_removed = []
         self.player_direction = None
         self.leaderboard = load_leaderboard()
         self.prev_direction = None
@@ -49,6 +48,7 @@ class App:
         self.player_direction = None
         self.coins_removed = []
         self.enemies = []
+        self.player = None
         self.canvas.bind()
         self.lines = make_lines(self.canvas)
         self.make_grid()
@@ -117,6 +117,7 @@ class App:
         else:
             self.isPause = True
             self.player_direction = None
+            self.prev_direction = None
             if self.state == 'menu':
                 self.display_menu()
 
@@ -188,8 +189,9 @@ class App:
                 self.states_manager('pause')
 
         def cheatKey(event):
-            if self.player.player_speed < 4:
-                self.player.player_speed += 0.2
+            if not self.isPause:
+                if self.player.player_speed < 4:
+                    self.player.player_speed += 0.2
 
         def bossKey(event):
             if not self.isPause:
@@ -233,30 +235,12 @@ class App:
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
 
         self.buttons.append(Button(self.window,
-                                   text="Options",
+                                   text="Settings",
                                    width=BUTTON_WIDTH,
                                    height=BUTTON_HEIGHT,
                                    command=lambda:
                                    self.states_manager('controls')))
         self.buttons[-1].place(x=BUTTON_4_X, y=BUTTON_4_Y)
-
-    def reset(self):
-        """resets the game"""
-        self.player_direction = None
-        self.prev_direction = None
-        self.score = 0
-        self.canvas.itemconfigure(self.player.player, state='hidden')
-        # self.canvas.delete(self.gameBoard)
-        self.canvas.delete(self.grid)
-        for line in self.lines:
-            self.canvas.delete(line)
-        for enemy in self.enemies:
-            enemy.player_direction = None
-            self.canvas.itemconfigure(enemy.enemy, state='hidden')
-
-        self.remove_coins()
-        self.canvas.delete(self.scoreText)
-        self.canvas.delete(self.highScoreText)
 
     def remove_coins(self):
         """remove the coins when continuing an old game"""
@@ -336,7 +320,7 @@ class App:
         self.texts.append(self.canvas.create_text(CONTROL_TEXTS_X,
                                                   BUTTON_1_Y + TEXTS_OFFSET,
                                                   font=('Arial', TEXTS_SIZE),
-                                                  text='Left Direction',
+                                                  text='Move Left',
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
@@ -351,7 +335,7 @@ class App:
         self.texts.append(self.canvas.create_text(CONTROL_TEXTS_X,
                                                   BUTTON_2_Y + TEXTS_OFFSET,
                                                   font=('Arial', TEXTS_SIZE),
-                                                  text='Right Direction',
+                                                  text='Move Right',
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
@@ -366,7 +350,7 @@ class App:
         self.texts.append(self.canvas.create_text(CONTROL_TEXTS_X,
                                                   BUTTON_3_Y + TEXTS_OFFSET,
                                                   font=('Arial', TEXTS_SIZE),
-                                                  text='Up Direction',
+                                                  text='Move Up',
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
@@ -381,7 +365,7 @@ class App:
         self.texts.append(self.canvas.create_text(CONTROL_TEXTS_X,
                                                   BUTTON_4_Y + TEXTS_OFFSET,
                                                   font=('Arial', TEXTS_SIZE),
-                                                  text='Down Direction',
+                                                  text='Move Down',
                                                   fill='white'))
 
         self.buttons.append(Button(self.window,
@@ -476,20 +460,23 @@ class App:
                             )
         self.buttons[-1].place(x=100, y=100)
 
+        self.texts.append(self.canvas.create_text(1060, 612,
+                                                  font=('Arial', 30, 'bold')))
+
     def change_color(self):
         new_color = self.color.get().strip()
         try:
-            Button(background=new_color)
+            Button(background=new_color)# create a mock button just to check
+            # the validity of the entered color
             self.player_color = new_color
             self.settings['color'] = new_color
             update_settings(self.settings)
             self.configure_controls()
+            self.canvas.itemconfigure(self.texts[-1], text='Color updated',
+                                      fill='green')
         except TclError:
-            self.texts.append(self.canvas.create_text(1055, 610,
-                                                      font=(
-                                                          'Arial', 30, 'bold'),
-                                                      text='Invalid Color!',
-                                                      fill='red'))
+            self.canvas.itemconfigure(self.texts[-1], text='Invalid Color!',
+                                      fill='red')
 
     def onButtonPress(self, key):
         """change the options when a button is pressed"""
@@ -520,6 +507,7 @@ class App:
                                                      text='Already Used!')
             else:
                 self.buttons[button_index].configure(text=key_name)
+                self.canvas.unbind(self.settings[key])
                 self.settings[key] = key_name
 
             self.configure_controls()
@@ -607,6 +595,8 @@ class App:
             self.user.destroy()
             self.game_over.destroy()
             self.configure_controls()
+            self.enemies = []
+            self.player = None
             self.states_manager('menu')
 
         self.change_objects_state('hidden')

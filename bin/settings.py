@@ -21,15 +21,15 @@ CELL_WIDTH = (GRID_STOP_X - GRID_START_X) / GRID_COLUMNS
 CELL_HEIGHT = (GRID_STOP_Y - GRID_START_Y) / GRID_ROWS
 
 
-MAZE_COORDINATES_PATH = "../Files/GameBoardWalls.txt"
+MAZE_COORDINATES_PATH = "../files/GameBoardWalls.txt"
 SAVE_PATH = "../save"
 LEADER_BOARD_PATH = SAVE_PATH + "/leaderboard.pickle"
 SETTINGS_PATH = SAVE_PATH + "/settings.pickle"
 GAME_SAVE_PATH = SAVE_PATH + "/game_save.pickle"
-BOSS_KEY_DOCUMENT_PATH = '../Files/ThingsToDo.png'
+BOSS_KEY_DOCUMENT_PATH = '../files/ThingsToDo.png'
 
-GAME_OVER_IMAGE_PATH = '../Files/game_over.png'
-WINNER_IMAGE_PATH = '../Files/winner.png'
+GAME_OVER_IMAGE_PATH = '../files/game_over.png'
+WINNER_IMAGE_PATH = '../files/winner.png'
 """
 ***CREDIT FOR THE IMAGES***
  https://www.freepik.com/vectors/celebration Celebration vector 
@@ -97,8 +97,8 @@ RECTANGLE_Y1 = 307
 RECTANGLE_Y2 = RECTANGLE_Y1 + 24
 
 ENEMY_COLORS = ['lightblue', 'red', 'pink', 'orange']
-HARD_ENEMY_SPEEDS = [2.8, 3.2, 3.2, 2.8]
-NORMAL_ENEMY_SPEEDS = [1.8, 2, 2, 1.8]
+HARD_ENEMY_SPEEDS = [3, 3.4, 3.4, 3]
+NORMAL_ENEMY_SPEEDS = [2, 2.2, 2.2, 2]
 ENEMY_X1 = 1
 ENEMY_X2 = ENEMY_X1 + PLAYER_DIMENSIONS
 ENEMY_Y1 = 2

@@ -6,7 +6,6 @@ class Player:
     def __init__(self, app):
         """initialize the player"""
         self.app = app
-        print(self.app.settings)
         self.player_color = self.app.settings['color']
         self.player_speed = PLAYER_SPEED
         self.make_player()
