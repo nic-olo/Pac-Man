@@ -1,5 +1,4 @@
 from tkinter import Tk, Button, Entry, PhotoImage, CENTER, TclError, Canvas, NW
-from CanvasManager import makeCanvas, make_lines, display_scores
 from MazeRender import make_walls, coins_renderer
 from SavingMananger import load_settings, load_leaderboard, continue_game, \
     save_game, update_settings, save_score
@@ -8,7 +7,7 @@ from Player import Player
 from settings import *
 
 
-def makeWindow():
+def make_window():
     """create the window"""
     window = Tk()
     window.title("Pac-Man")
@@ -18,15 +17,21 @@ def makeWindow():
     return window
 
 
+def make_canvas(window):
+    """create the canvas"""
+    canvas = Canvas(window, background=CANVAS_COLOR, width=WINDOW_WIDTH,
+                    height=WINDOW_HEIGHT, highlightthickness=0)
+    return canvas
+
+
 class App:
     def __init__(self):
         """initialize the game"""
         self.hideWindow = False
         self.texts = []
         self.buttons = []
-        self.window = makeWindow()
-        self.canvas = makeCanvas(self.window)
-        # self.image = setImage(MAZE_PATH)
+        self.window = make_window()
+        self.canvas = make_canvas(self.window)
         self.settings = load_settings()
         self.configure_controls()
         self.player_direction = None
@@ -42,7 +47,7 @@ class App:
         self.display_menu()
         self.window.mainloop()
 
-    def startUp(self):
+    def start_up(self):
         """creating all the objects needed to play"""
         self.score = 0
         self.player_direction = None
@@ -50,21 +55,18 @@ class App:
         self.enemies = []
         self.player = None
         self.canvas.bind()
-        self.lines = make_lines(self.canvas)
         self.make_grid()
         self.walls = make_walls(MAZE_COORDINATES_PATH, self.canvas)
         self.coins = coins_renderer(MAZE_COORDINATES_PATH, self.canvas,
                                     self.coins_removed, self.state)
 
         try:
-            self.scoreText, self.highScoreText = display_scores(self.canvas,
-                                                                self.score,
-                                                                self.
-                                                                leaderboard[0]
-                                                                ['score'])
-        except IndexError:
-            self.scoreText, self.highScoreText = display_scores(self.canvas,
-                                                                self.score, 0)
+            self.scoreText, self.highScoreText = self.display_scores(
+                self.score,
+                self.leaderboard[0]['score'])
+        except IndexError:  # if no leaderboard file is found
+            self.scoreText, self.highScoreText = self.display_scores(
+                self.score, 0)
 
         self.make_sprites()
         self.state = 'start'
@@ -72,30 +74,48 @@ class App:
     def continue_game(self):
         """creating all the objects needed to play"""
         self.canvas.bind()
-        self.lines = make_lines(self.canvas)
         self.make_grid()
         self.walls = make_walls(MAZE_COORDINATES_PATH, self.canvas)
         self.coins = coins_renderer(MAZE_COORDINATES_PATH, self.canvas,
                                     self.coins_removed, self.state)
 
         try:
-            self.scoreText, self.highScoreText = display_scores(self.canvas,
-                                                                self.score,
-                                                                self.
-                                                                leaderboard[0]
-                                                                ['score'])
+            self.scoreText, self.highScoreText = self.display_scores(
+                self.score,
+                self.leaderboard[0]['score'])
         except IndexError:
-            self.scoreText, self.highScoreText = display_scores(self.canvas,
-                                                                self.score, 0)
+            self.scoreText, self.highScoreText = self.display_scores(
+                self.score, 0)
 
         self.make_sprites()
         self.state = 'start'
 
+    def display_scores(self, score, high_score):
+        """display the score and the high score"""
+        scoreText = self.canvas.create_text(
+            SCORE_POS_X, SCORE_POS_Y,
+            fill="white",
+            font="Algerian",
+            text=f'SCORE: {score}'
+        )
+        highScoreText = self.canvas.create_text(
+            HIGH_SCORE_POS_X, HIGH_SCORE_POS_Y, fill="white",
+            font="Algerian",
+            text=f'HIGH SCORE: {high_score}'
+        )
+        return scoreText, highScoreText
+
+    def update_score(self):
+        """update the score"""
+        self.score += 1
+        txt = "SCORE: " + str(self.score)
+        self.canvas.itemconfigure(self.scoreText, text=txt)
+
     def states_manager(self, state):
         """This methods manages all the links between the various game
-        windows by creating and destroying the objects accordingly by
-        calling other methods """
-
+        windows by creating and destroying objects accordingly by
+        calling methods when needed"""
+        # destroy all the objects of the previous window
         try:
             self.color.destroy()
         except AttributeError:
@@ -108,7 +128,7 @@ class App:
 
         self.buttons = []
         self.texts = []
-
+        # select the correct method based on the state
         if self.state == 'start' or self.state == 'continue' or \
                 self.state == 'resume':
             self.isPause = False
@@ -131,7 +151,7 @@ class App:
                 self.display_leaderboard()
 
             elif self.state == 'controls':
-                self.display_options_menu()
+                self.display_settings_menu()
 
     def play_game(self):
         """start the game"""
@@ -141,12 +161,12 @@ class App:
                 self.coins_removed, self.score = continue_game()
                 self.continue_game()
 
-            except FileNotFoundError:
+            except FileNotFoundError:  # if no past save is found
                 self.state = 'start'
-                self.startUp()
+                self.start_up()
 
         elif self.state == 'start':
-            self.startUp()
+            self.start_up()
 
         elif self.state == 'resume':
             self.change_objects_state('normal')
@@ -157,6 +177,7 @@ class App:
 
     def make_sprites(self):
         """create the player and the enemies"""
+        self.enemies = []
         for i in range(4):
             self.enemies.append(Enemy(self, i + 1))
         self.player = Player(self)
@@ -190,8 +211,8 @@ class App:
 
         def cheatKey(event):
             if not self.isPause:
-                if self.player.player_speed < 4:
-                    self.player.player_speed += 0.2
+                self.player.player_speed = PLAYER_CHEAT_SPEED if \
+                    self.player.player_speed == PLAYER_SPEED else PLAYER_SPEED
 
         def bossKey(event):
             if not self.isPause:
@@ -256,14 +277,9 @@ class App:
     def change_objects_state(self, state):
         """change the state of the objects between hidden and normal"""
         self.canvas.itemconfigure(self.player.player, state=state)
-        # self.canvas.itemconfigure(self.gameBoard, state=state)
-        # self.canvas.itemconfigure(self.grid, state=state)
-        # for line in self.lines:
-        # self.canvas.itemconfigure(line, state=state)
         for enemy in self.enemies:
             enemy.player_direction = None
             self.canvas.itemconfigure(enemy.enemy, state=state)
-            # self.canvas.itemconfigure(enemy.grid, state=state)
         for wall in self.walls:
             self.canvas.itemconfigure(wall[2], state=state)
         for coin in self.coins:
@@ -306,8 +322,8 @@ class App:
                             )
         self.buttons[-1].place(x=BUTTON_3_X, y=BUTTON_3_Y)
 
-    def display_options_menu(self):
-        """display the options menu"""
+    def display_settings_menu(self):
+        """display the settings"""
         self.buttons.append(Button(self.window,
                                    text=self.settings['left'],
                                    width=BUTTON_WIDTH,
@@ -397,7 +413,7 @@ class App:
             CONTROL_TEXTS_X - 100,
             BUTTON_6_Y + TEXTS_OFFSET,
             font=('Arial', TEXTS_SIZE),
-            text='Cheat (increase Player speed)',
+            text='Cheat (higher Player speed)',
             fill='white'))
 
         self.buttons.append(Button(self.window,
@@ -464,9 +480,10 @@ class App:
                                                   font=('Arial', 30, 'bold')))
 
     def change_color(self):
+        """change the color of the player"""
         new_color = self.color.get().strip()
         try:
-            Button(background=new_color)# create a mock button just to check
+            Button(background=new_color)  # create a mock button just to check
             # the validity of the entered color
             self.player_color = new_color
             self.settings['color'] = new_color
@@ -474,12 +491,12 @@ class App:
             self.configure_controls()
             self.canvas.itemconfigure(self.texts[-1], text='Color updated',
                                       fill='green')
-        except TclError:
+        except TclError:  # if the color entered is invalid
             self.canvas.itemconfigure(self.texts[-1], text='Invalid Color!',
                                       fill='red')
 
     def onButtonPress(self, key):
-        """change the options when a button is pressed"""
+        """change an option when a button is pressed"""
         if key == 'difficulty':
             self.settings[key] = 'hard' if self.settings[
                                                key] == 'normal' else 'normal'
@@ -500,6 +517,7 @@ class App:
                                             lambda event: change_key(event))
 
         def change_key(event):
+            """change a key when a button on the keyboard is pressed"""
             key_name = '<' + event.keysym + '>'
             self.window.unbind('<Key>', self.new_key)
             if key_name in self.settings.values():
@@ -544,13 +562,17 @@ class App:
         for i in range(min(8, len(self.leaderboard))):
             name = self.leaderboard[i]['name']
             score = self.leaderboard[i]['score']
+            color = "white"
+
+            if score >= 398:
+                color = '#FFD700'
 
             self.texts.append(
                 self.canvas.create_text(NAMES_X_POSITION - 180,
                                         NAMES_Y_POSITION + 50 + i * 40,
                                         text=str(i + 1),
                                         font=('Arial', 22),
-                                        fill='white'
+                                        fill=color
                                         ))
 
             self.texts.append(
@@ -558,7 +580,7 @@ class App:
                                         NAMES_Y_POSITION + 50 + i * 40,
                                         text=name,
                                         font=('Arial', 22),
-                                        fill='white'
+                                        fill=color
                                         ))
 
             self.texts.append(self.canvas.create_text(
@@ -566,7 +588,7 @@ class App:
                 SCORES_Y_POSITION + 50 + i * 40,
                 text=score,
                 font=('Arial', 22),
-                fill='white'
+                fill=color
             ))
 
     def display_game_over_menu(self):
@@ -640,13 +662,14 @@ class App:
         self.buttons[-1].place(x=GAME_OVER_BUTTON_X, y=GAME_OVER_BUTTON_Y)
 
     def hide_window(self):
+        """hide the game window"""
         if not self.hideWindow:
             self.hideCanvas = Canvas(self.window, background='black',
                                      width=WINDOW_WIDTH, height=WINDOW_HEIGHT,
                                      highlightthickness=0)
             self.hideCanvas.place(x=0, y=0)
             self.window.title("ThingsToDo.txt - Notepad")
-            self.boss_image = PhotoImage(file=BOSS_KEY_DOCUMENT_PATH)
+            self.boss_image = PhotoImage(file=BOSS_KEY_IMAGE_PATH)
             self.boss = self.hideCanvas.create_image(0, -25,
                                                      image=self.boss_image,
                                                      anchor=NW)

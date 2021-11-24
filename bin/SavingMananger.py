@@ -38,8 +38,8 @@ def continue_game():
     """retrieve an old game save"""
     with open(GAME_SAVE_PATH, 'rb') as game_save:
         old_save = pickle.load(game_save)
-    return old_save['player_coords'], old_save['enemies_coords'],  \
-           old_save['coins_removed'], old_save['score']
+    return old_save['player_coords'], old_save['enemies_coords'], \
+    old_save['coins_removed'], old_save['score']
 
 
 def save_score(leaderboard):

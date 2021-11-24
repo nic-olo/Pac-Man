@@ -1,12 +1,12 @@
 """collection of all the methods that modify the maze"""
 from settings import *
-from CanvasManager import update_score
 
 
 def make_walls(path, canvas):
     """create the walls of the maze"""
     walls = []
     with open(path, 'r') as file:
+        # read a file txt to get the coordinates of the walls
         for i in range(GRID_ROWS):
             line = file.readline()
             for j in range(GRID_COLUMNS):
@@ -27,22 +27,20 @@ def make_walls(path, canvas):
 
 def coins_renderer(path, canvas, coins_removed, state):
     """create the coins"""
-    file = open(path, 'r')
-    coins = []
+    with open(path, 'r') as file:
+        coins = []
 
-    for i in range(GRID_ROWS):
-        line = file.readline()
-        for j in range(GRID_COLUMNS):
-            temp = True
-            if state == 'continue':
-                for c in coins_removed:
-                    if j == c[0] and i == c[1]:
-                        temp = False
-                        break
-            if line[j] == 'C' and temp:
-                coins.append([j, i])
-
-    file.close()
+        for i in range(GRID_ROWS):
+            line = file.readline()
+            for j in range(GRID_COLUMNS):
+                temp = True
+                if state == 'continue':
+                    for c in coins_removed:
+                        if j == c[0] and i == c[1]:
+                            temp = False
+                            break
+                if line[j] == 'C' and temp:
+                    coins.append([j, i])
 
     for i in range(len(coins)):
         coin_id = canvas.create_oval(
@@ -71,9 +69,8 @@ def coin_collision(app):
             canvas.delete(coin[2])
             app.coins_removed.append(coin)
             coins.remove(coin)
-            app.score += 1
-            update_score(canvas, app.scoreText, app.score)
+            app.update_score()
 
     if not coins:
-        app.coins = coins_renderer(MAZE_COORDINATES_PATH, canvas, [],
-                                   'start')
+        app.states_manager('GameOver')  # if all the coins are taken the
+        # game ends

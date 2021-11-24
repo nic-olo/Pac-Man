@@ -1,7 +1,6 @@
 from settings import *
 from random import randint
-from CanvasManager import move_grid
-
+from time import time
 
 class Enemy:
     def __init__(self, app, enemy_number):
@@ -16,10 +15,12 @@ class Enemy:
         self.target = None
         self.enemy_speed = HARD_ENEMY_SPEEDS[self.enemy_number - 1] if \
             self.app.settings['difficulty'] == 'hard' \
-            else NORMAL_ENEMY_SPEEDS[self.enemy_number - 1]
+            else NORMAL_ENEMY_SPEEDS[self.enemy_number - 1]  # set the speed
+        # of the enemies according to the difficulty of the game
         self.enemy_color = ENEMY_COLORS[self.enemy_number - 1]
         self.make_enemy()
         self.make_enemy_grid()
+        self.prev_time = time()
 
     def make_enemy(self):
         """create the enemy"""
@@ -28,26 +29,25 @@ class Enemy:
                 self.app.enemies_coords[self.enemy_number - 1],
                 fill=self.enemy_color)
             return
-        file = open(MAZE_COORDINATES_PATH, 'r')
-
-        for i in range(GRID_ROWS):
-            line = file.readline()
-            for j in range(GRID_COLUMNS):
-                if line[j] == str(self.enemy_number):
-                    self.enemy_pos = [j, i]
-                    break
-
-        file.close()
+        with open(MAZE_COORDINATES_PATH, 'r') as file:
+            # reads a txt file that contains the coordinates of the enemies
+            # which are then displaced accordingly
+            for i in range(GRID_ROWS):
+                line = file.readline()
+                for j in range(GRID_COLUMNS):
+                    if line[j] == str(self.enemy_number):
+                        enemy_pos = [j, i]
+                        break
 
         self.enemy = self.canvas.create_oval(
-            GRID_START_X + CELL_WIDTH * self.enemy_pos[0] + ENEMY_X1,
-            GRID_START_Y + CELL_HEIGHT * self.enemy_pos[1] + ENEMY_Y1,
-            GRID_START_X + CELL_WIDTH * (self.enemy_pos[0]) + ENEMY_X2,
-            GRID_START_Y + CELL_HEIGHT * (self.enemy_pos[1]) + ENEMY_Y2,
+            GRID_START_X + CELL_WIDTH * enemy_pos[0] + ENEMY_X1,
+            GRID_START_Y + CELL_HEIGHT * enemy_pos[1] + ENEMY_Y1,
+            GRID_START_X + CELL_WIDTH * (enemy_pos[0]) + ENEMY_X2,
+            GRID_START_Y + CELL_HEIGHT * (enemy_pos[1]) + ENEMY_Y2,
             fill=self.enemy_color)
 
     def make_enemy_grid(self):
-        """create the grid that surrounds the enemy"""
+        """create a grid that surrounds the enemy"""
         self.grid = self.canvas.create_rectangle(RECTANGLE_X1, RECTANGLE_Y1,
                                                  RECTANGLE_X2, RECTANGLE_Y2,
                                                  outline=self.enemy_color
@@ -64,14 +64,14 @@ class Enemy:
         """block the player from passing through a wall"""
         for wall in self.app.walls:
             if self.direction == 'left' and abs(self.enemy_coords[0] - (
-                    GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 3:
+                    GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 5:
                 if abs(self.enemy_coords[1] - (
                         GRID_START_Y + CELL_HEIGHT * wall[1])) < 12:
                     self.direction = None
                     return 1
 
             elif self.direction == 'right' and abs(self.enemy_coords[2] - (
-                    GRID_START_X + CELL_WIDTH * wall[0])) < 3:
+                    GRID_START_X + CELL_WIDTH * wall[0])) < 5:
                 if abs(self.enemy_coords[1] - (
                         GRID_START_Y + CELL_HEIGHT * wall[1])) < 12:
                     self.direction = None
@@ -79,14 +79,14 @@ class Enemy:
 
             elif self.direction == 'up' and abs(
                     self.enemy_coords[1] - (
-                            GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 3:
+                            GRID_START_Y + CELL_HEIGHT * (wall[1] + 1))) < 5:
                 if abs(self.enemy_coords[0] - (
                         GRID_START_X + CELL_WIDTH * wall[0])) < 12:
                     self.direction = None
                     return 3
 
             elif self.direction == 'down' and abs(self.enemy_coords[3] - (
-                    GRID_START_Y + CELL_HEIGHT * wall[1])) < 3:
+                    GRID_START_Y + CELL_HEIGHT * wall[1])) < 5:
                 if abs(self.enemy_coords[0] - (
                         GRID_START_X + CELL_WIDTH * wall[0])) < 12:
                     self.direction = None
@@ -95,6 +95,22 @@ class Enemy:
     def move_enemy(self):
         """check the position of the enemy and move it"""
         self.enemy_coords = self.canvas.coords(self.enemy)
+
+        def move_grid():
+            """move the grid"""
+            self.canvas.coords(self.grid,
+                               ((self.enemy_coords[
+                                     0] + CELL_WIDTH // 2) // CELL_WIDTH) *
+                               CELL_WIDTH + 4,
+                               ((self.enemy_coords[1] +
+                                 CELL_HEIGHT // 2) // CELL_HEIGHT) *
+                               CELL_HEIGHT + 6,
+                               ((self.enemy_coords[2] +
+                                 CELL_WIDTH // 2) // CELL_WIDTH) *
+                               CELL_WIDTH + 4,
+                               ((self.enemy_coords[3] +
+                                 CELL_HEIGHT // 2) // CELL_HEIGHT) *
+                               CELL_HEIGHT + 6)
 
         def inGrid():
             """check if the enemy is in the grid"""
@@ -123,20 +139,24 @@ class Enemy:
         move()
         inGrid()
         _ = self.can_move()
+        now = time()
+        delta_time = now - self.prev_time
+        self.enemy_weighted_speed = self.enemy_speed * delta_time
+        self.prev_time = now
 
         if self.direction == 'left':
-            self.canvas.move(self.enemy, -self.enemy_speed, 0)
+            self.canvas.move(self.enemy, -self.enemy_weighted_speed, 0)
 
         elif self.direction == 'right':
-            self.canvas.move(self.enemy, self.enemy_speed, 0)
+            self.canvas.move(self.enemy, self.enemy_weighted_speed, 0)
 
         elif self.direction == 'up':
-            self.canvas.move(self.enemy, 0, -self.enemy_speed)
+            self.canvas.move(self.enemy, 0, -self.enemy_weighted_speed)
 
         elif self.direction == 'down':
-            self.canvas.move(self.enemy, 0, self.enemy_speed)
+            self.canvas.move(self.enemy, 0, self.enemy_weighted_speed)
 
-        move_grid(self, self.enemy_coords)
+        move_grid()
 
         self.prev_direction = self.direction
         self.player_collision()
@@ -154,14 +174,18 @@ class Enemy:
         """set the direction of the enemy"""
         if xdir < -5 and self.can_move() != 1:
             xdir = 'left'
+
         elif self.can_move() != 2:
             xdir = 'right'
+
         if ydir < -5 and self.can_move() != 3:
             ydir = 'up'
+
         elif self.can_move() != 4:
             ydir = 'down'
 
         if randint(0, 2) == 1:
             self.direction = xdir
+
         else:
             self.direction = ydir
