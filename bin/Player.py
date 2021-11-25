@@ -29,11 +29,15 @@ class Player:
                 GRID_START_Y + CELL_HEIGHT * player_pos[1] + PLAYER_Y1,
                 GRID_START_X + CELL_WIDTH * (player_pos[0]) + PLAYER_X2,
                 GRID_START_Y + CELL_HEIGHT * (player_pos[1]) + PLAYER_Y2,
-                fill=self.player_color)
+                fill=self.player_color
+            )
 
         else:
-            self.player = self.app.canvas.create_oval(self.app.player_coords,
-                                                      fill=self.player_color)
+            self.player = self.app.canvas.create_oval(
+                self.app.player_coords,
+                fill=self.player_color
+            )
+
             self.app.state = 'start'
 
     def can_move(self):
@@ -42,10 +46,12 @@ class Player:
         for wall in self.app.walls:
             wall_coords = self.app.canvas.coords(wall[2])
             if self.app.player_direction == 'left' and \
-                    abs(player_coords[0] - (
-                    GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 5 and \
-                    wall_coords[1] < player_coords[3] and wall_coords[3] > \
-                    player_coords[1]:
+                    abs(
+                        player_coords[0] - (GRID_START_X + CELL_WIDTH *
+                                            (wall[0] + 1))) < 5 and \
+                    wall_coords[1] < player_coords[3] and \
+                    wall_coords[3] > player_coords[1]:
+
                 self.app.player_direction = None
 
             elif self.app.player_direction == 'right' and abs(
@@ -53,6 +59,7 @@ class Player:
                             GRID_START_X + CELL_WIDTH * wall[0])) < 5 and \
                     wall_coords[1] < player_coords[3] and wall_coords[3] > \
                     player_coords[1]:
+
                 self.app.player_direction = None
 
             elif self.app.player_direction == 'up' and abs(
@@ -60,6 +67,7 @@ class Player:
                             wall[1] + 1))) < 5 and \
                     wall_coords[0] < player_coords[2] and wall_coords[2] > \
                     player_coords[0]:
+
                 self.app.player_direction = None
 
             elif self.app.player_direction == 'down' and abs(
@@ -67,6 +75,7 @@ class Player:
                             GRID_START_Y + CELL_HEIGHT * wall[1])) < 5 and \
                     wall_coords[0] < player_coords[2] and wall_coords[2] > \
                     player_coords[0]:
+
                 self.app.player_direction = None
 
     def move_player(self):
@@ -77,14 +86,16 @@ class Player:
             if self.app.state == 'start' or self.app.state == 'resume':
                 self.app.canvas.coords(
                     self.app.grid,
-                    ((positions[0]
-                      + CELL_WIDTH // 2) // CELL_WIDTH) * CELL_WIDTH + 4,
-                    ((positions[1]
-                      + CELL_HEIGHT // 2) // CELL_HEIGHT) * CELL_HEIGHT + 6,
-                    ((positions[2]
-                      + CELL_WIDTH // 2) // CELL_WIDTH) * CELL_WIDTH + 4,
-                    ((positions[3]
-                      + CELL_HEIGHT // 2) // CELL_HEIGHT) * CELL_HEIGHT + 6)
+                    ((positions[0] + CELL_WIDTH // 2) //
+                     CELL_WIDTH) * CELL_WIDTH + 4,
+                    ((positions[1] + CELL_HEIGHT // 2) //
+                     CELL_HEIGHT) * CELL_HEIGHT + 6,
+                    ((positions[2] + CELL_WIDTH // 2) //
+                     CELL_WIDTH) * CELL_WIDTH + 4,
+                    ((positions[3] + CELL_HEIGHT // 2) //
+                     CELL_HEIGHT) * CELL_HEIGHT + 6
+                )
+
                 self.app.player_coords = self.app.canvas.coords(self.app.grid)
 
         def in_grid():
@@ -93,16 +104,23 @@ class Player:
 
                 if self.app.player_direction == 'up' or \
                         self.app.player_direction == 'down':
-                    offset = abs(((positions[0] - GRID_START_X) %
-                                  CELL_WIDTH) - CELL_WIDTH)
+
+                    offset = abs(
+                        ((positions[0] - GRID_START_X) %
+                         CELL_WIDTH) - CELL_WIDTH
+                    )
+
                     if 3 < offset < 15:
                         self.app.player_direction = self.app.prev_direction
 
                 if self.app.player_direction == 'left' or \
                         self.app.player_direction == 'right':
+
                     offset = abs(
                         ((positions[1] - GRID_START_Y) % CELL_HEIGHT) -
-                        CELL_HEIGHT)
+                        CELL_HEIGHT
+                    )
+
                     if 3 < offset < 15:
                         self.app.player_direction = self.app.prev_direction
 

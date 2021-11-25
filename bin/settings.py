@@ -1,5 +1,12 @@
 """Declaring all the constants needed for the development of the project"""
 
+# general settings
+FPS = 144
+DELAY = int(1000 / FPS)  # round the number to avoid errors
+CANVAS_COLOR = '#050C1D'
+MAZE_COLOR = '#1C1CB9'
+
+# window settings
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 
@@ -9,6 +16,7 @@ Y_WIN_POS = 0
 IMG_WIDTH = 560
 IMG_HEIGHT = 620
 
+# grid settings
 GRID_START_X = 220
 GRID_STOP_X = 1060
 GRID_START_Y = 6
@@ -20,7 +28,7 @@ GRID_COLUMNS = 35
 CELL_WIDTH = (GRID_STOP_X - GRID_START_X) / GRID_COLUMNS
 CELL_HEIGHT = (GRID_STOP_Y - GRID_START_Y) / GRID_ROWS
 
-
+# files paths
 MAZE_COORDINATES_PATH = "../files/GameBoardWalls.txt"
 SAVE_PATH = "../save"
 LEADER_BOARD_PATH = SAVE_PATH + "/leaderboard.pickle"
@@ -32,14 +40,14 @@ GAME_OVER_IMAGE_PATH = '../files/game_over.png'
 WINNER_IMAGE_PATH = '../files/winner.png'
 """
 ***CREDIT FOR THE IMAGES***
- https://www.freepik.com/vectors/celebration Celebration vector 
+ https://www.freepik.com/vectors/celebration Celebration vector
  created by memetsaputra - www.freepik.com
- https://www.freepik.com/vectors/cartoon Cartoon vector 
+ https://www.freepik.com/vectors/cartoon Cartoon vector
  created by memetsaputra - www.freepik.com
 ***CREATED BY memetsaputra***
 """
 
-
+# buttons settings
 BUTTON_WIDTH = int(11 * WINDOW_WIDTH / WINDOW_HEIGHT)
 BUTTON_HEIGHT = int(5 * WINDOW_HEIGHT / WINDOW_WIDTH)
 
@@ -70,6 +78,7 @@ TEXTS_OFFSET = 25
 TEXTS_SIZE = 20
 BUTTON_TEXT_SIZE = 12
 
+# game over settings
 GAME_OVER_IMAGE_X = WINDOW_WIDTH / 2
 GAME_OVER_IMAGE_Y = 150
 GAME_OVER_SCORE_X = GAME_OVER_IMAGE_X
@@ -82,50 +91,49 @@ GAME_OVER_BUTTON_X = GAME_OVER_ENTRY_X + 240
 GAME_OVER_BUTTON_Y = GAME_OVER_ENTRY_Y - 5
 ERROR_MESSAGE_Y = GAME_OVER_ENTRY_Y + 60
 
+# player settings
 PLAYER_DIMENSIONS = 17
+PLAYER_COLOR = 'yellow'
+
 PLAYER_X1 = 3
 PLAYER_X2 = PLAYER_X1 + PLAYER_DIMENSIONS
 PLAYER_Y1 = 3
 PLAYER_Y2 = PLAYER_Y1 + PLAYER_DIMENSIONS
-
-
 PLAYER_COORDINATES = [PLAYER_X1, PLAYER_X1, PLAYER_X2, PLAYER_Y2]
 
-RECTANGLE_X1 = 628
-RECTANGLE_X2 = RECTANGLE_X1 + 24
-RECTANGLE_Y1 = 307
-RECTANGLE_Y2 = RECTANGLE_Y1 + 24
+PLAYER_SPEED = 100
+PLAYER_CHEAT_SPEED = 160
 
+# grid settings
+GRID_X1 = 628
+GRID_X2 = GRID_X1 + 24
+GRID_Y1 = 307
+GRID_Y2 = GRID_Y1 + 24
+
+# enemy settings
 ENEMY_COLORS = ['lightblue', 'red', 'pink', 'orange']
-NORMAL_ENEMY_SPEEDS = [100, 115, 115, 100]
-HARD_ENEMY_SPEEDS = [125, 140, 140, 125]
 
 ENEMY_X1 = 1
 ENEMY_X2 = ENEMY_X1 + PLAYER_DIMENSIONS
 ENEMY_Y1 = 2
-ENEMY_Y2 = ENEMY_Y1 + PLAYER_DIMENSIONS
-# the dimensions of the enemies are the same of the player
-ENEMY_RANGE = 4
+ENEMY_Y2 = ENEMY_Y1 + PLAYER_DIMENSIONS  # the dimensions of the enemies are
+# the same of the player
+NORMAL_ENEMY_SPEEDS = [100, 115, 115, 100]
+HARD_ENEMY_SPEEDS = [125, 140, 140, 125]
 
+# coins settings
+COINS_COLOR = '#FFD700'
 COINS_RATIO = 7
 COIN_SIZE_X = CELL_WIDTH / CELL_HEIGHT * COINS_RATIO
 COIN_SIZE_Y = CELL_HEIGHT / CELL_HEIGHT * COINS_RATIO
 
-PLAYER_COLOR = 'yellow'
-COINS_COLOR = '#FFD700'
-MAZE_COLOR = '#1C1CB9'
-CANVAS_COLOR = '#050C1D'
-
-PLAYER_SPEED = 100
-PLAYER_CHEAT_SPEED = 160
-FPS = 144
-DELAY = int(1000 / FPS)  # round the number to avoid errors
-
+# score settings
 SCORE_POS_X = 120
 SCORE_POS_Y = 200
 HIGH_SCORE_POS_X = WINDOW_WIDTH - SCORE_POS_X
 HIGH_SCORE_POS_Y = SCORE_POS_Y
 
+# leaderboard settings
 LEADERBOARD_X_POSITION = WINDOW_WIDTH / 2
 LEADERBOARD_Y_POSITION = 120
 NAMES_X_POSITION = WINDOW_WIDTH / 2 - 120
@@ -133,7 +141,7 @@ SCORES_X_POSITION = WINDOW_WIDTH / 2 + 120
 NAMES_Y_POSITION = LEADERBOARD_Y_POSITION + 60
 SCORES_Y_POSITION = NAMES_Y_POSITION
 
-
+# default controls and options
 DEFAULT_SETTINGS = {
     'left': '<Left>',
     'right': '<Right>',
@@ -145,4 +153,3 @@ DEFAULT_SETTINGS = {
     'difficulty': 'normal',
     'color': PLAYER_COLOR
 }
-
