@@ -62,22 +62,28 @@ class Enemy:
 
     def update(self):
         """update the enemy movement"""
+        self.now = time()
         self.move_enemy()
-        if self.app.state == 'start' or self.app.state == 'resume':
+
+        if not self.app.is_pause:
             self.app.window.after(DELAY, self.update)
+
+        else:
+            self.direction = None
+            self.prev_direction = None
 
     def can_move(self):
         """block the player from passing through a wall"""
         for wall in self.app.walls:
             if self.direction == 'left' and abs(self.enemy_coords[0] - (
-                    GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 5 and \
+                    GRID_START_X + CELL_WIDTH * (wall[0] + 1))) < 6 and \
                     abs(
                         self.enemy_coords[1] - (GRID_START_Y +
                                                 CELL_HEIGHT * wall[1])) < 12:
                 self.direction = None
 
             elif self.direction == 'right' and abs(self.enemy_coords[2] - (
-                    GRID_START_X + CELL_WIDTH * wall[0])) < 5 and \
+                    GRID_START_X + CELL_WIDTH * wall[0])) < 6 and \
                     abs(
                         self.enemy_coords[1] - (GRID_START_Y +
                                                 CELL_HEIGHT * wall[1])) < 12:
@@ -85,7 +91,7 @@ class Enemy:
 
             elif self.direction == 'up' and abs(
                     self.enemy_coords[1] - (GRID_START_Y + CELL_HEIGHT *
-                                            (wall[1] + 1))) < 5 and \
+                                            (wall[1] + 1))) < 6 and \
                     abs(
                         self.enemy_coords[0] - (GRID_START_X +
                                                 CELL_WIDTH * wall[0])) < 12:
@@ -93,7 +99,7 @@ class Enemy:
 
             elif self.direction == 'down' and abs(
                     self.enemy_coords[3] - (GRID_START_Y +
-                                            CELL_HEIGHT * wall[1])) < 5 and \
+                                            CELL_HEIGHT * wall[1])) < 6 and \
                     abs(
                         self.enemy_coords[0] - (GRID_START_X +
                                                 CELL_WIDTH * wall[0])) < 12:
@@ -145,10 +151,9 @@ class Enemy:
         move()
         inGrid()
         self.can_move()
-        now = time()
-        delta_time = now - self.prev_time
+        delta_time = self.now - self.prev_time
         self.enemy_weighted_speed = self.enemy_speed * delta_time
-        self.prev_time = now
+        self.prev_time = self.now
 
         if self.direction == 'left':
             self.canvas.move(self.enemy, -self.enemy_weighted_speed, 0)

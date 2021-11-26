@@ -1,3 +1,4 @@
+from time import time
 from tkinter import Tk, Button, Entry, PhotoImage, CENTER, TclError, Canvas, NW
 from MazeRender import make_walls, coins_renderer
 from SavingMananger import load_settings, load_leaderboard, continue_game, \
@@ -49,7 +50,7 @@ class App:
         self.player_direction = None
         self.leaderboard = load_leaderboard()
         self.prev_direction = None
-        self.isPause = True
+        self.is_pause = True
         self.state = "menu"
         self.enemies = []
 
@@ -121,12 +122,12 @@ class App:
         scoreText = self.canvas.create_text(
             SCORE_POS_X, SCORE_POS_Y,
             fill="white",
-            font="Algerian",
+            font="Arial",
             text=f'SCORE: {score}'
         )
         highScoreText = self.canvas.create_text(
             HIGH_SCORE_POS_X, HIGH_SCORE_POS_Y, fill="white",
-            font="Algerian",
+            font="Arial",
             text=f'HIGH SCORE: {high_score}'
         )
         return scoreText, highScoreText
@@ -157,11 +158,11 @@ class App:
         # select the correct method based on the state
         if self.state == 'start' or self.state == 'continue' or \
                 self.state == 'resume':
-            self.isPause = False
+            self.is_pause = False
             self.play_game()
 
         else:
-            self.isPause = True
+            self.is_pause = True
             self.player_direction = None
             self.prev_direction = None
             if self.state == 'menu':
@@ -198,9 +199,11 @@ class App:
 
         elif self.state == 'resume':
             self.change_objects_state('normal')
+            self.state = 'start'
 
         self.player.update()
         for enemy in self.enemies:
+            enemy.prev_time = time()
             enemy.update()
 
     def make_sprites(self):
@@ -238,16 +241,29 @@ class App:
             self.player_direction = "down"
 
         def esc_key(event):
-            if self.state == 'start' or self.state == 'resume':
+            if not self.is_pause:
                 self.states_manager('pause')
 
+            elif self.state == 'pause':
+                self.states_manager('resume')
+
         def cheat_key(event):
-            if not self.isPause:
+            if not self.is_pause:
                 self.player.player_speed = PLAYER_CHEAT_SPEED if \
                     self.player.player_speed == PLAYER_SPEED else PLAYER_SPEED
 
+        def slow_enemies(event):
+            if not self.is_pause:
+                if self.enemies[0].enemy_speed % 10 == 0:
+                    speed_change = -45
+                else:
+                    speed_change = 45
+
+                for enemy in self.enemies:
+                    enemy.enemy_speed += speed_change
+
         def boss_key(event):
-            if not self.isPause:
+            if not self.is_pause:
                 self.states_manager('pause')
             self.hide_window()
 
@@ -257,6 +273,7 @@ class App:
         self.canvas.bind(self.settings['down'], move_down)
         self.canvas.bind(self.settings['escape'], esc_key)
         self.canvas.bind(self.settings['cheat'], cheat_key)
+        self.canvas.bind(self.settings['slow'], slow_enemies)
         self.canvas.bind(self.settings['boss'], boss_key)
         self.canvas.focus_set()
 
@@ -321,7 +338,6 @@ class App:
 
     def display_pause_menu(self):
         """display the menu when the game is paused"""
-        self.player_direction = None
         self.change_objects_state('hidden')
         self.display_pause_buttons()
 
@@ -494,10 +510,10 @@ class App:
 
         self.texts.append(
             self.canvas.create_text(
-                CONTROL_TEXTS_X,
+                CONTROL_TEXTS_X - 20,
                 BUTTON_5_Y + TEXTS_OFFSET,
                 font=('Arial', TEXTS_SIZE),
-                text='Pause',
+                text='Pause/Resume',
                 fill='white'
             )
         )
@@ -515,12 +531,25 @@ class App:
 
         self.buttons[-1].place(x=BUTTON_6_X, y=BUTTON_6_Y)
 
+        self.buttons.append(
+            Button(
+                self.window,
+                text=self.settings['slow'],
+                width=BUTTON_WIDTH,
+                height=BUTTON_HEIGHT,
+                font=('Arial', BUTTON_TEXT_SIZE),
+                command=lambda: self.onButtonPress('slow')
+            )
+        )
+
+        self.buttons[-1].place(x=BUTTON_6_X + 200, y=BUTTON_6_Y)
+
         self.texts.append(
             self.canvas.create_text(
-                CONTROL_TEXTS_X - 100,
+                CONTROL_TEXTS_X - 150,
                 BUTTON_6_Y + TEXTS_OFFSET,
                 font=('Arial', TEXTS_SIZE),
-                text='Cheat (Higher Player Speed)',
+                text='Cheat (Faster Player/Slower Enemy)',
                 fill='white'
             )
         )
@@ -616,7 +645,7 @@ class App:
 
         self.texts.append(
             self.canvas.create_text(
-                1060,
+                1090,
                 612,
                 font=('Arial', 30, 'bold')
             )
@@ -650,7 +679,7 @@ class App:
         if key == 'difficulty':
             self.settings[key] = 'hard' if self.settings[
                                                key] == 'normal' else 'normal'
-            self.buttons[7].configure(text=self.settings[key])
+            self.buttons[8].configure(text=self.settings[key])
             update_settings(self.settings)
 
         else:
@@ -800,7 +829,7 @@ class App:
             self.configure_controls()
             self.enemies = []
             self.player = None
-            self.states_manager('menu')
+            self.states_manager('leaderboard')
 
         self.change_objects_state('hidden')
 
