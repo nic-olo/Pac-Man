@@ -152,5 +152,5 @@ class Player:
     def update(self):
         """update the movement of the player"""
         self.move_player()
-        if self.app.state == 'start' or self.app.state == 'resume':
+        if not self.app.is_pause:
             self.app.window.after(DELAY, self.update)
