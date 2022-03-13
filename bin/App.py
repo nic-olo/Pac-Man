@@ -126,7 +126,8 @@ class App:
             text=f'SCORE: {score}'
         )
         highScoreText = self.canvas.create_text(
-            HIGH_SCORE_POS_X, HIGH_SCORE_POS_Y, fill="white",
+            HIGH_SCORE_POS_X, HIGH_SCORE_POS_Y,
+            fill="white",
             font="Arial",
             text=f'HIGH SCORE: {high_score}'
         )
@@ -140,7 +141,7 @@ class App:
 
     def states_manager(self, state):
         """This methods manages all the links between the various game
-        windows by creating and destroying objects accordingly by
+        windows by creating and destroying objects accordingly and by
         calling methods when needed"""
         # destroy all the objects of the previous window
         try:
@@ -185,9 +186,9 @@ class App:
         if self.state == 'continue':
             try:
                 self.player_coords, \
-                    self.enemies_coords, \
-                    self.coins_removed, \
-                    self.score = continue_game()
+                self.enemies_coords, \
+                self.coins_removed, \
+                self.score = continue_game()
                 self.continue_game()
 
             except FileNotFoundError:  # if no past save is found
